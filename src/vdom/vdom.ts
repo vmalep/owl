@@ -4,9 +4,9 @@ import {
   VDOMNode,
   VMultiNode,
   VNode,
-  VTextNode,
   VRootNode,
   VStaticNode,
+  VTextNode,
 } from "./types";
 
 // -----------------------------------------------------------------------------
@@ -246,6 +246,14 @@ function updateChildren(
       patch(oldEndVnode, newEndVnode);
       oldEndVnode = oldChildren[--oldEndIdx];
       newEndVnode = newChildren[--newEndIdx];
+    } else if (isSame(oldStartVnode, newEndVnode)) {
+      // 123 => 231
+      patch(oldStartVnode, newEndVnode);
+      const oldEl = getEl(oldStartVnode);
+      const nextEl = getEl(oldEndVnode)!.nextSibling;
+      oldEl!.parentElement!.insertBefore(oldEl!, nextEl);
+      oldStartVnode = oldChildren[++oldStartIdx];
+      newEndVnode = newChildren[--newEndIdx];
     } else {
       if (oldKeyToIdx === undefined) {
         oldKeyToIdx = {};
@@ -265,7 +273,7 @@ function updateChildren(
         buildTree(newStartVnode, getEl(oldStartVnode) as any, NodePosition.Before, staticNodes);
         newStartVnode = newChildren[++newStartIdx];
       } else {
-        throw new Error("boom" + oldStartVnode);
+        throw new Error("boom" + JSON.stringify(oldStartVnode));
       }
     }
   }
