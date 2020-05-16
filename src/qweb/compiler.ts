@@ -377,7 +377,6 @@ function compileSetNode(ctx: CompilerContext, ast: ASTSetNode) {
 function compileEscNode(ctx: CompilerContext, ast: ASTEscNode) {
   if (ast.expr === "0") {
     addVNode(ctx, `{type: ${NodeType.Text}, text: this.vMultiToString(ctx[this.zero])}`, false);
-
     return;
   }
   const expr = compileExpr(ast.expr);

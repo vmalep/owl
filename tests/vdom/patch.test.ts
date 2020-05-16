@@ -357,5 +357,129 @@ describe("updating children in a dom node, with keys", () => {
       expect(fixture.querySelectorAll("span")[2]).toBe(span1);
       expect(fixture.querySelectorAll("span")[3]).toBe(span4);
     });
+
+    test("moves element to end", function () {
+      const vnode1 = vDom("p", { key: 1 }, [1, 2, 3].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [2, 3, 1].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span1 = fixture.querySelectorAll("span")[0];
+      const span2 = fixture.querySelectorAll("span")[1];
+      const span3 = fixture.querySelectorAll("span")[2];
+
+      expect(fixture.innerHTML).toBe("<p><span>1</span><span>2</span><span>3</span></p>");
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe("<p><span>2</span><span>3</span><span>1</span></p>");
+      expect(fixture.querySelectorAll("span")[0]).toBe(span2);
+      expect(fixture.querySelectorAll("span")[1]).toBe(span3);
+      expect(fixture.querySelectorAll("span")[2]).toBe(span1);
+    });
+
+    test("moves element backward", function () {
+      const vnode1 = vDom("p", { key: 1 }, [1, 2, 3, 4].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [1, 4, 2, 3].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span1 = fixture.querySelectorAll("span")[0];
+      const span2 = fixture.querySelectorAll("span")[1];
+      const span3 = fixture.querySelectorAll("span")[2];
+      const span4 = fixture.querySelectorAll("span")[3];
+
+      expect(fixture.innerHTML).toBe(
+        "<p><span>1</span><span>2</span><span>3</span><span>4</span></p>"
+      );
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe(
+        "<p><span>1</span><span>4</span><span>2</span><span>3</span></p>"
+      );
+      expect(fixture.querySelectorAll("span")[0]).toBe(span1);
+      expect(fixture.querySelectorAll("span")[1]).toBe(span4);
+      expect(fixture.querySelectorAll("span")[2]).toBe(span2);
+      expect(fixture.querySelectorAll("span")[3]).toBe(span3);
+    });
+
+    test("swap first and last", function () {
+      const vnode1 = vDom("p", { key: 1 }, [1, 2, 3, 4].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [4, 2, 3, 1].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span1 = fixture.querySelectorAll("span")[0];
+      const span2 = fixture.querySelectorAll("span")[1];
+      const span3 = fixture.querySelectorAll("span")[2];
+      const span4 = fixture.querySelectorAll("span")[3];
+
+      expect(fixture.innerHTML).toBe(
+        "<p><span>1</span><span>2</span><span>3</span><span>4</span></p>"
+      );
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe(
+        "<p><span>4</span><span>2</span><span>3</span><span>1</span></p>"
+      );
+      expect(fixture.querySelectorAll("span")[0]).toBe(span4);
+      expect(fixture.querySelectorAll("span")[1]).toBe(span2);
+      expect(fixture.querySelectorAll("span")[2]).toBe(span3);
+      expect(fixture.querySelectorAll("span")[3]).toBe(span1);
+    });
+  });
+
+  describe("combinations of additions, removals and reorderings", function () {
+    test("move to left and replace", function () {
+      const vnode1 = vDom("p", { key: 1 }, [1, 2, 3, 4, 5].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [4, 1, 2, 3, 6].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span1 = fixture.querySelectorAll("span")[0];
+      const span2 = fixture.querySelectorAll("span")[1];
+      const span3 = fixture.querySelectorAll("span")[2];
+      const span4 = fixture.querySelectorAll("span")[3];
+      const span5 = fixture.querySelectorAll("span")[4];
+
+      expect(fixture.innerHTML).toBe(
+        "<p><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></p>"
+      );
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe(
+        "<p><span>4</span><span>1</span><span>2</span><span>3</span><span>6</span></p>"
+      );
+      expect(fixture.querySelectorAll("span")[0]).toBe(span4);
+      expect(fixture.querySelectorAll("span")[1]).toBe(span1);
+      expect(fixture.querySelectorAll("span")[2]).toBe(span2);
+      expect(fixture.querySelectorAll("span")[3]).toBe(span3);
+      expect(fixture.querySelectorAll("span")[4]).not.toBe(span5);
+    });
+
+    test("move to left and leave hole", function () {
+      const vnode1 = vDom("p", { key: 1 }, [1, 4, 5].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [4, 6].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span4 = fixture.querySelectorAll("span")[1];
+
+      expect(fixture.innerHTML).toBe("<p><span>1</span><span>4</span><span>5</span></p>");
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe("<p><span>4</span><span>6</span></p>");
+      expect(fixture.querySelectorAll("span")[0]).toBe(span4);
+    });
+
+    test("handles moved and set to undefined element ending at the end", function () {
+      const vnode1 = vDom("p", { key: 1 }, [2, 4, 5].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [4, 5,3].map(spanNum));
+
+      buildTree(vnode1, fixture);
+      const span4 = fixture.querySelectorAll("span")[1];
+      const span5 = fixture.querySelectorAll("span")[2];
+
+      expect(fixture.innerHTML).toBe("<p><span>2</span><span>4</span><span>5</span></p>");
+
+      patch(vnode1, vnode2);
+      expect(fixture.innerHTML).toBe("<p><span>4</span><span>5</span><span>3</span></p>");
+      expect(fixture.querySelectorAll("span")[0]).toBe(span4);
+      expect(fixture.querySelectorAll("span")[1]).toBe(span5);
+    });
   });
 });

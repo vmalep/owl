@@ -189,22 +189,24 @@ export function patch(vnode: VNode, target: VNode, staticNodes: HTMLElement[] = 
   }
 }
 
-function removeTree(vnode: VNode) {
-  switch (vnode.type) {
-    case NodeType.Multi:
-      for (let child of vnode.children) {
-        removeTree(child);
-      }
-      break;
-    case NodeType.Root:
-      removeTree(vnode.child!);
-      break;
-    case NodeType.Static:
-    case NodeType.Text:
-    case NodeType.DOM:
-    case NodeType.Comment:
-      vnode.el!.remove();
-      break;
+function removeTree(vnode: VNode | undefined) {
+  if (vnode) {
+    switch (vnode.type) {
+      case NodeType.Multi:
+        for (let child of vnode.children) {
+          removeTree(child);
+        }
+        break;
+      case NodeType.Root:
+        removeTree(vnode.child!);
+        break;
+      case NodeType.Static:
+      case NodeType.Text:
+      case NodeType.DOM:
+      case NodeType.Comment:
+        vnode.el!.remove();
+        break;
+    }
   }
 }
 
@@ -218,7 +220,6 @@ function updateChildren(
   staticNodes: HTMLElement[]
 ) {
   const oldChildren = vnode.children;
-  // const parentElm = (vnode as any).el;
   const newChildren = newParent.children;
   let oldStartIdx = 0;
   let newStartIdx = 0;
@@ -231,14 +232,17 @@ function updateChildren(
   let oldKeyToIdx: any;
   let idxInOld;
 
-  // console.warn(oldChildren, newChildren)
-
   // main update loop
   while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-    // console.warn(JSON.stringify(oldStartVnode));
-    // console.warn( JSON.stringify(newStartVnode))
-
-    if (isSame(oldStartVnode, newStartVnode)) {
+    if (oldStartVnode === undefined) {
+      oldStartVnode = oldChildren[++oldStartIdx];
+    } else if (oldEndVnode === undefined) {
+      oldEndVnode = oldChildren[--oldEndIdx];
+    } else if (newStartVnode === undefined) {
+      newStartVnode = newChildren[++newStartIdx];
+    } else if (newEndVnode === undefined) {
+      newEndVnode = newChildren[--newEndIdx];
+    } else if (isSame(oldStartVnode, newStartVnode)) {
       patch(oldStartVnode, newStartVnode, staticNodes);
       oldStartVnode = oldChildren[++oldStartIdx];
       newStartVnode = newChildren[++newStartIdx];
@@ -254,6 +258,13 @@ function updateChildren(
       oldEl!.parentElement!.insertBefore(oldEl!, nextEl);
       oldStartVnode = oldChildren[++oldStartIdx];
       newEndVnode = newChildren[--newEndIdx];
+    } else if (isSame(oldEndVnode, newStartVnode)) {
+      patch(oldEndVnode, newStartVnode);
+      const oldEl = getEl(oldEndVnode);
+      const nextEl = getEl(oldStartVnode)!;
+      oldEl!.parentElement!.insertBefore(oldEl!, nextEl);
+      oldEndVnode = oldChildren[--oldEndIdx];
+      newStartVnode = newChildren[++newStartIdx];
     } else {
       if (oldKeyToIdx === undefined) {
         oldKeyToIdx = {};
@@ -273,7 +284,17 @@ function updateChildren(
         buildTree(newStartVnode, getEl(oldStartVnode) as any, NodePosition.Before, staticNodes);
         newStartVnode = newChildren[++newStartIdx];
       } else {
-        throw new Error("boom" + JSON.stringify(oldStartVnode));
+        const vnToMove = oldChildren[idxInOld];
+        if (isSame(vnToMove, newStartVnode)) {
+          patch(vnToMove, newStartVnode);
+          oldChildren[idxInOld] = undefined as any;
+          const oldEl = getEl(vnToMove);
+          const nextEl = getEl(oldStartVnode)!;
+          oldEl!.parentElement!.insertBefore(oldEl!, nextEl);
+        } else {
+          throw new Error("boom");
+        }
+        newStartVnode = newChildren[++newStartIdx];
       }
     }
   }
@@ -293,8 +314,6 @@ function updateChildren(
       for (; newStartIdx <= newEndIdx; ++newStartIdx) {
         buildTree(newChildren[newStartIdx], anchor, position, staticNodes);
       }
-      // before = newCh[newEndIdx + 1] == null ? null : newCh[newEndIdx + 1].elm;
-      // addVnodes(parentElm, before, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
     } else {
       for (let i = oldStartIdx; i <= oldEndIdx; i++) {
         removeTree(oldChildren[i]);
