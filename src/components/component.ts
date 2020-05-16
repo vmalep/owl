@@ -1,4 +1,4 @@
-import { FComponent, CComponent, OwlElement, render } from "./rendering_engine";
+import { FComponent, CComponent, OwlElement, render } from "./core";
 
 export class Component<Props = any, Env = any> {
   static template: string;
@@ -13,6 +13,8 @@ export class Component<Props = any, Env = any> {
     this.props = props;
     this.env = env;
   }
+
+  async willStart(): Promise<void> {}
 
   render(): Promise<void> {
     return render(this.__owl__!);

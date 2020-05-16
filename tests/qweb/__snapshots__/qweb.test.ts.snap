@@ -355,6 +355,23 @@ exports[`misc mix of t-foreach and t-set/t-value, 2 1`] = `
 }"
 `;
 
+exports[`special cases for some boolean html attributes/properties input type= checkbox, with t-att-checked 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__1\`
+    let _1 = ctx['flag']
+    tree.child = {type: 2, tag: \\"input\\", children: [], attrs: {type:\\"checkbox\\",checked:_1}, key: 1};
+}"
+`;
+
+exports[`special cases for some boolean html attributes/properties various boolean html attributes 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__1\`
+    tree.child = {type: 5, id: 0};
+}"
+`;
+
 exports[`static templates div with a class attribute 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
@@ -1107,6 +1124,39 @@ exports[`t-if t-set, then t-if, part 2 1`] = `
     }
 }"
 `;
+
+exports[`t-key can use t-key directive on a node 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__1\`
+    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: ctx['beer'].id};
+    vn1.children.push({type: 3, text: ctx['beer'].name, el: null});
+}"
+`;
+
+exports[`t-key t-key directive in a list 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__1\`
+    const vn1 = tree.child = {type: 2, tag: \\"ul\\", children: [], key: 1};
+    let _3 = ctx['beers'];
+    let length2 = _3.length;
+    ctx = Object.create(ctx);
+    for (let i = 0; i < length2; i++) {
+        ctx.beer_first = i === 0;
+        ctx.beer_last = i === length2 - 1;
+        ctx.beer = _3[i];
+        ctx.beer_index = i;
+        ctx.beer_value = _3[i];
+        const vn4 = {type: 2, tag: \\"li\\", children: [], key: ctx['beer'].id};
+        vn1.children.push(vn4);
+        vn4.children.push({type: 3, text: ctx['beer'].name, el: null});
+    }
+    ctx = ctx.__proto__;
+}"
+`;
+
+exports[`t-key t-key directive in a list 2`] = `"<ul><li>Chimay Rouge</li></ul>"`;
 
 exports[`t-on can bind event handler 1`] = `
 "function anonymous(tree, ctx, metadata

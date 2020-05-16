@@ -12,7 +12,7 @@ import {
 } from "./types";
 import { parse } from "./parser";
 import { QWeb } from "./qweb";
-import { OwlElement } from "../core/rendering_engine";
+import { OwlElement } from "../components/core";
 
 interface QWebVar {
   expr: string;
@@ -502,5 +502,5 @@ function makeEl(ast: AST): HTMLElement | Text | Comment {
       return document.createComment(ast.text);
     }
   }
-  throw new Error("Something is wrong...");
+  throw new Error("Something is wrong..." + ast.type);
 }

@@ -468,7 +468,7 @@ describe("updating children in a dom node, with keys", () => {
 
     test("handles moved and set to undefined element ending at the end", function () {
       const vnode1 = vDom("p", { key: 1 }, [2, 4, 5].map(spanNum));
-      const vnode2 = vDom("p", { key: 1 }, [4, 5,3].map(spanNum));
+      const vnode2 = vDom("p", { key: 1 }, [4, 5, 3].map(spanNum));
 
       buildTree(vnode1, fixture);
       const span4 = fixture.querySelectorAll("span")[1];

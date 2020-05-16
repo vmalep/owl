@@ -189,6 +189,19 @@ describe("qweb parser", () => {
     });
   });
 
+  test("dom node with a dom node with a component inside", () => {
+    const ast = parse(`<div><div><MyComponent /></div></div>`);
+    expect(structure(ast)).toEqual({
+      type: "DOM",
+      children: [
+        {
+          type: "DOM",
+          children: [{ type: "COMPONENT" }],
+        },
+      ],
+    });
+  });
+
   test("dom node and component with props", () => {
     const ast = parse(`<div><MyComponent a="valueA" b="valueB" /></div>`);
     const compNode = (ast as any).children[0];

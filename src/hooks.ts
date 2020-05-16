@@ -1,5 +1,5 @@
 import { reactive } from "./reactive";
-import { core, render } from "./core/rendering_engine";
+import { core, render } from "./components/index";
 
 export function useState<T>(state: T): T {
   let component = core.current!;

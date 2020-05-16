@@ -1768,34 +1768,31 @@ describe("t-on", () => {
 //   });
 // });
 
-// describe("special cases for some boolean html attributes/properties", () => {
-//   test("input type= checkbox, with t-att-checked", () => {
-//     const template = xml`<input type="checkbox" t-att-checked="flag"/>`;
-//     const result = render(template, { flag: true });
-//     expect(result).toBe(`<input type="checkbox" checked="">`);
-//   });
+describe("special cases for some boolean html attributes/properties", () => {
+  test("input type= checkbox, with t-att-checked", () => {
+    const template = xml`<input type="checkbox" t-att-checked="flag"/>`;
+    const result = render(template, { flag: true });
+    expect(result).toBe(`<input type="checkbox" checked="">`);
+  });
 
-//   test("various boolean html attributes", () => {
-//     // the unique assertion here is the code snapshot automatically done by
-//     // renderToString
-//     expect.assertions(1);
-//     qweb.addTemplate(
-//       "test",
-//       `
-//       <div>
-//         <input type="checkbox" checked="checked"/>
-//         <input checked="checked"/>
-//         <div checked="checked"/>
-//         <div selected="selected"/>
-//         <option selected="selected" other="1"/>
-//         <input readonly="readonly"/>
-//         <button disabled="disabled"/>
-//       </div>
-//       `
-//     );
-//     render(template, { flag: true });
-//   });
-// });
+  test("various boolean html attributes", () => {
+    // the unique assertion here is the code snapshot automatically done by
+    // renderToString
+    expect.assertions(1);
+    const template = xml`
+      <div>
+        <input type="checkbox" checked="checked"/>
+        <input checked="checked"/>
+        <div checked="checked"/>
+        <div selected="selected"/>
+        <option selected="selected" other="1"/>
+        <input readonly="readonly"/>
+        <button disabled="disabled"/>
+      </div>
+      `;
+    render(template, { flag: true });
+  });
+});
 
 describe("whitespace handling", () => {
   test("white space only text nodes are condensed into a single space", () => {
@@ -1840,28 +1837,27 @@ describe("whitespace handling", () => {
   //   });
 });
 
-// describe("t-key", () => {
-//   test("can use t-key directive on a node", () => {
-//     const template = xml`<div t-key="beer.id"><t t-esc="beer.name"/></div>`;
-//     expect(render(template, { beer: { id: 12, name: "Chimay Rouge" } })).toBe(
-//       "<div>Chimay Rouge</div>"
-//     );
-//   });
+describe("t-key", () => {
+  test("can use t-key directive on a node", () => {
+    const template = xml`<div t-key="beer.id"><t t-esc="beer.name"/></div>`;
+    expect(render(template, { beer: { id: 12, name: "Chimay Rouge" } })).toBe(
+      "<div>Chimay Rouge</div>"
+    );
+  });
 
-//   test("t-key directive in a list", () => {
-//     qweb.addTemplate(
-//       "test",
-//       `<ul>
-//         <li t-foreach="beers" t-as="beer" t-key="beer.id"><t t-esc="beer.name"/></li>
-//        </ul>`
-//     );
-//     expect(
-//       render(template, {
-//         beers: [{ id: 12, name: "Chimay Rouge" }],
-//       })
-//     ).toMatchSnapshot();
-//   });
-// });
+  test("t-key directive in a list", () => {
+    const template = xml`
+      <ul>
+        <li t-foreach="beers" t-as="beer" t-key="beer.id"><t t-esc="beer.name"/></li>
+       </ul>`;
+
+    expect(
+      render(template, {
+        beers: [{ id: 12, name: "Chimay Rouge" }],
+      })
+    ).toMatchSnapshot();
+  });
+});
 
 // describe("debugging", () => {
 //   test("t-debug", () => {

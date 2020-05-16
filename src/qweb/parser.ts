@@ -287,6 +287,9 @@ function parseDOMNode(ctx: ParserContext, node: Element): ASTDOMNode | ASTStatic
       child: domNode,
     };
   }
+  if (!subContext.isStatic) {
+    ctx.isStatic = false;
+  }
   return domNode;
 }
 

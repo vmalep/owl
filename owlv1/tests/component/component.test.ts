@@ -55,53 +55,53 @@ class WidgetA extends Component {
 //------------------------------------------------------------------------------
 
 describe("basic widget properties", () => {
-  test("props is set on root components", async () => {
-    const widget = new Component(null, {});
-    expect(widget.props).toEqual({});
-  });
+  // test("props is set on root components", async () => {
+  //   const widget = new Component(null, {});
+  //   expect(widget.props).toEqual({});
+  // });
 
-  test("has no el after creation", async () => {
-    const widget = new Component();
-    expect(widget.el).toBe(null);
-  });
+  // test("has no el after creation", async () => {
+  //   const widget = new Component();
+  //   expect(widget.el).toBe(null);
+  // });
 
-  test("can be mounted", async () => {
-    class SomeWidget extends Component {
-      static template = xml`<div>content</div>`;
-    }
-    const widget = new SomeWidget();
-    widget.mount(fixture);
-    await nextTick();
-    expect(fixture.innerHTML).toBe("<div>content</div>");
-  });
+  // test("can be mounted", async () => {
+  //   class SomeWidget extends Component {
+  //     static template = xml`<div>content</div>`;
+  //   }
+  //   const widget = new SomeWidget();
+  //   widget.mount(fixture);
+  //   await nextTick();
+  //   expect(fixture.innerHTML).toBe("<div>content</div>");
+  // });
 
-  test("can be mounted on a documentFragment", async () => {
-    class SomeWidget extends Component {
-      static template = xml`<div>content</div>`;
-    }
-    const widget = new SomeWidget();
-    await widget.mount(document.createDocumentFragment());
-    expect(fixture.innerHTML).toBe("");
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div>content</div>");
-  });
+  // test("can be mounted on a documentFragment", async () => {
+  //   class SomeWidget extends Component {
+  //     static template = xml`<div>content</div>`;
+  //   }
+  //   const widget = new SomeWidget();
+  //   await widget.mount(document.createDocumentFragment());
+  //   expect(fixture.innerHTML).toBe("");
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div>content</div>");
+  // });
 
-  test("display a nice message if mounted on a non existing node", async () => {
-    class SomeWidget extends Component {
-      static template = xml`<div>content</div>`;
-    }
-    const widget = new SomeWidget();
-    let error;
-    try {
-      await widget.mount(null as any);
-    } catch (e) {
-      error = e;
-    }
-    expect(error).toBeDefined();
-    expect(error.message).toBe(
-      "Component 'SomeWidget' cannot be mounted: the target is not a valid DOM node.\nMaybe the DOM is not ready yet? (in that case, you can use owl.utils.whenReady)"
-    );
-  });
+  // test("display a nice message if mounted on a non existing node", async () => {
+  //   class SomeWidget extends Component {
+  //     static template = xml`<div>content</div>`;
+  //   }
+  //   const widget = new SomeWidget();
+  //   let error;
+  //   try {
+  //     await widget.mount(null as any);
+  //   } catch (e) {
+  //     error = e;
+  //   }
+  //   expect(error).toBeDefined();
+  //   expect(error.message).toBe(
+  //     "Component 'SomeWidget' cannot be mounted: the target is not a valid DOM node.\nMaybe the DOM is not ready yet? (in that case, you can use owl.utils.whenReady)"
+  //   );
+  // });
 
   test("display an error message if result of rendering is empty", async () => {
     class SomeWidget extends Component {
@@ -128,70 +128,70 @@ describe("basic widget properties", () => {
     }
   });
 
-  test("can be clicked on and updated", async () => {
-    class Counter extends Component {
-      static template = xml`
-      <div><t t-esc="state.counter"/><button t-on-click="state.counter++">Inc</button></div>`;
-      state = useState({
-        counter: 0,
-      });
-    }
+  // test("can be clicked on and updated", async () => {
+  //   class Counter extends Component {
+  //     static template = xml`
+  //     <div><t t-esc="state.counter"/><button t-on-click="state.counter++">Inc</button></div>`;
+  //     state = useState({
+  //       counter: 0,
+  //     });
+  //   }
 
-    const counter = new Counter();
-    counter.mount(fixture);
-    await nextTick();
-    expect(fixture.innerHTML).toBe("<div>0<button>Inc</button></div>");
-    const button = (<HTMLElement>counter.el).getElementsByTagName("button")[0];
-    button.click();
-    await nextTick();
-    expect(fixture.innerHTML).toBe("<div>1<button>Inc</button></div>");
-  });
+  //   const counter = new Counter();
+  //   counter.mount(fixture);
+  //   await nextTick();
+  //   expect(fixture.innerHTML).toBe("<div>0<button>Inc</button></div>");
+  //   const button = (<HTMLElement>counter.el).getElementsByTagName("button")[0];
+  //   button.click();
+  //   await nextTick();
+  //   expect(fixture.innerHTML).toBe("<div>1<button>Inc</button></div>");
+  // });
 
-  test("can handle empty props", async () => {
-    class Child extends Component {
-      static template = xml`<span><t t-esc="props.val"/></span>`;
-    }
-    class Parent extends Component {
-      static template = xml`<div><Child val=""/></div>`;
-      static components = { Child };
-    }
+  // test("can handle empty props", async () => {
+  //   class Child extends Component {
+  //     static template = xml`<span><t t-esc="props.val"/></span>`;
+  //   }
+  //   class Parent extends Component {
+  //     static template = xml`<div><Child val=""/></div>`;
+  //     static components = { Child };
+  //   }
 
-    const parent = new Parent();
-    await parent.mount(fixture);
-    expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
-    expect(fixture.innerHTML).toBe("<div><span></span></div>");
-  });
+  //   const parent = new Parent();
+  //   await parent.mount(fixture);
+  //   expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
+  //   expect(fixture.innerHTML).toBe("<div><span></span></div>");
+  // });
 
-  test("cannot be clicked on and updated if not in DOM", async () => {
-    class Counter extends Component {
-      static template = xml`
-      <div><t t-esc="state.counter"/><button t-on-click="state.counter++">Inc</button></div>`;
-      state = useState({
-        counter: 0,
-      });
-    }
+  // test("cannot be clicked on and updated if not in DOM", async () => {
+  //   class Counter extends Component {
+  //     static template = xml`
+  //     <div><t t-esc="state.counter"/><button t-on-click="state.counter++">Inc</button></div>`;
+  //     state = useState({
+  //       counter: 0,
+  //     });
+  //   }
 
-    const counter = new Counter();
-    const target = document.createElement("div");
-    await counter.mount(target);
-    expect(target.innerHTML).toBe("<div>0<button>Inc</button></div>");
-    const button = (<HTMLElement>counter.el).getElementsByTagName("button")[0];
-    button.click();
-    await nextTick();
-    expect(target.innerHTML).toBe("<div>0<button>Inc</button></div>");
-    expect(counter.state.counter).toBe(0);
-  });
+  //   const counter = new Counter();
+  //   const target = document.createElement("div");
+  //   await counter.mount(target);
+  //   expect(target.innerHTML).toBe("<div>0<button>Inc</button></div>");
+  //   const button = (<HTMLElement>counter.el).getElementsByTagName("button")[0];
+  //   button.click();
+  //   await nextTick();
+  //   expect(target.innerHTML).toBe("<div>0<button>Inc</button></div>");
+  //   expect(counter.state.counter).toBe(0);
+  // });
 
-  test("widget style and classname", async () => {
-    class StyledWidget extends Component {
-      static template = xml`
-        <div style="font-weight:bold;" class="some-class">world</div>
-      `;
-    }
-    const widget = new StyledWidget();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe(`<div style="font-weight:bold;" class="some-class">world</div>`);
-  });
+  // test("widget style and classname", async () => {
+  //   class StyledWidget extends Component {
+  //     static template = xml`
+  //       <div style="font-weight:bold;" class="some-class">world</div>
+  //     `;
+  //   }
+  //   const widget = new StyledWidget();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe(`<div style="font-weight:bold;" class="some-class">world</div>`);
+  // });
 
   test("changing state before first render does not trigger a render", async () => {
     const steps: string[] = [];
@@ -253,201 +253,201 @@ describe("basic widget properties", () => {
     expect(steps).toEqual(["__render", "mounted"]);
   });
 
-  test("render method wait until rendering is done", async () => {
-    class TestW extends Component {
-      static template = xml`<div><t t-esc="state.drinks"/></div>`;
-      state = { drinks: 1 };
-    }
-    const widget = new TestW();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div>1</div>");
+  // test("render method wait until rendering is done", async () => {
+  //   class TestW extends Component {
+  //     static template = xml`<div><t t-esc="state.drinks"/></div>`;
+  //     state = { drinks: 1 };
+  //   }
+  //   const widget = new TestW();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div>1</div>");
 
-    widget.state.drinks = 2;
+  //   widget.state.drinks = 2;
 
-    const renderPromise = widget.render();
-    expect(fixture.innerHTML).toBe("<div>1</div>");
-    await renderPromise;
-    expect(fixture.innerHTML).toBe("<div>2</div>");
-  });
+  //   const renderPromise = widget.render();
+  //   expect(fixture.innerHTML).toBe("<div>1</div>");
+  //   await renderPromise;
+  //   expect(fixture.innerHTML).toBe("<div>2</div>");
+  // });
 
-  test("keeps a reference to env", async () => {
-    const widget = new Component();
-    expect(widget.env).toBe(env);
-  });
+  // test("keeps a reference to env", async () => {
+  //   const widget = new Component();
+  //   expect(widget.env).toBe(env);
+  // });
 
-  test("do not remove previously rendered dom if not necessary", async () => {
-    class SomeComponent extends Component {
-      static template = xml`<div/>`;
-    }
-    const widget = new SomeComponent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe(`<div></div>`);
-    widget.el!.appendChild(document.createElement("span"));
-    expect(fixture.innerHTML).toBe(`<div><span></span></div>`);
-    widget.render(); // FIXME?
-    expect(fixture.innerHTML).toBe(`<div><span></span></div>`);
-  });
+  // test("do not remove previously rendered dom if not necessary", async () => {
+  //   class SomeComponent extends Component {
+  //     static template = xml`<div/>`;
+  //   }
+  //   const widget = new SomeComponent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe(`<div></div>`);
+  //   widget.el!.appendChild(document.createElement("span"));
+  //   expect(fixture.innerHTML).toBe(`<div><span></span></div>`);
+  //   widget.render(); // FIXME?
+  //   expect(fixture.innerHTML).toBe(`<div><span></span></div>`);
+  // });
 
-  test("reconciliation alg is not confused in some specific situation", async () => {
-    // in this test, we set t-key to 4 because it was in conflict with the
-    // template id corresponding to the first child.
-    class Child extends Component {
-      static template = xml`<span>child</span>`;
-    }
+  // test("reconciliation alg is not confused in some specific situation", async () => {
+  //   // in this test, we set t-key to 4 because it was in conflict with the
+  //   // template id corresponding to the first child.
+  //   class Child extends Component {
+  //     static template = xml`<span>child</span>`;
+  //   }
 
-    class Parent extends Component {
-      static template = xml`
-        <div>
-            <Child />
-            <Child t-key="4"/>
-        </div>
-      `;
-      static components = { Child };
-    }
+  //   class Parent extends Component {
+  //     static template = xml`
+  //       <div>
+  //           <Child />
+  //           <Child t-key="4"/>
+  //       </div>
+  //     `;
+  //     static components = { Child };
+  //   }
 
-    const widget = new Parent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div><span>child</span><span>child</span></div>");
-  });
+  //   const widget = new Parent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div><span>child</span><span>child</span></div>");
+  // });
 
-  test("reconciliation alg works for t-foreach in t-foreach", async () => {
-    const warn = console.warn;
-    console.warn = () => {};
-    class Child extends Component {
-      static template = xml`<div><t t-esc="props.blip"/></div>`;
-    }
+  // test("reconciliation alg works for t-foreach in t-foreach", async () => {
+  //   const warn = console.warn;
+  //   console.warn = () => {};
+  //   class Child extends Component {
+  //     static template = xml`<div><t t-esc="props.blip"/></div>`;
+  //   }
 
-    class Parent extends Component {
-      static template = xml`
-        <div>
-            <t t-foreach="state.s" t-as="section">
-                <t t-foreach="section.blips" t-as="blip">
-                  <Child blip="blip"/>
-                </t>
-            </t>
-        </div>`;
-      static components = { Child };
-      state = { s: [{ blips: ["a1", "a2"] }, { blips: ["b1"] }] };
-    }
+  //   class Parent extends Component {
+  //     static template = xml`
+  //       <div>
+  //           <t t-foreach="state.s" t-as="section">
+  //               <t t-foreach="section.blips" t-as="blip">
+  //                 <Child blip="blip"/>
+  //               </t>
+  //           </t>
+  //       </div>`;
+  //     static components = { Child };
+  //     state = { s: [{ blips: ["a1", "a2"] }, { blips: ["b1"] }] };
+  //   }
 
-    const widget = new Parent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div><div>a1</div><div>a2</div><div>b1</div></div>");
-    expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
-    console.warn = warn;
-  });
+  //   const widget = new Parent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div><div>a1</div><div>a2</div><div>b1</div></div>");
+  //   expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
+  //   console.warn = warn;
+  // });
 
-  test("reconciliation alg works for t-foreach in t-foreach, 2", async () => {
-    class Child extends Component {
-      static template = xml`<div><t t-esc="props.row + '_' + props.col"/></div>`;
-    }
+  // test("reconciliation alg works for t-foreach in t-foreach, 2", async () => {
+  //   class Child extends Component {
+  //     static template = xml`<div><t t-esc="props.row + '_' + props.col"/></div>`;
+  //   }
 
-    class Parent extends Component {
-      static template = xml`
-        <div>
-          <p t-foreach="state.rows" t-as="row" t-key="row">
-            <p t-foreach="state.cols" t-as="col" t-key="col">
-                <Child row="row" col="col"/>
-              </p>
-            </p>
-        </div>`;
-      static components = { Child };
-      state = useState({ rows: [1, 2], cols: ["a", "b"] });
-    }
+  //   class Parent extends Component {
+  //     static template = xml`
+  //       <div>
+  //         <p t-foreach="state.rows" t-as="row" t-key="row">
+  //           <p t-foreach="state.cols" t-as="col" t-key="col">
+  //               <Child row="row" col="col"/>
+  //             </p>
+  //           </p>
+  //       </div>`;
+  //     static components = { Child };
+  //     state = useState({ rows: [1, 2], cols: ["a", "b"] });
+  //   }
 
-    const widget = new Parent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe(
-      "<div><p><p><div>1_a</div></p><p><div>1_b</div></p></p><p><p><div>2_a</div></p><p><div>2_b</div></p></p></div>"
-    );
-    widget.state.rows = [2, 1];
-    await nextTick();
-    expect(fixture.innerHTML).toBe(
-      "<div><p><p><div>2_a</div></p><p><div>2_b</div></p></p><p><p><div>1_a</div></p><p><div>1_b</div></p></p></div>"
-    );
-  });
+  //   const widget = new Parent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe(
+  //     "<div><p><p><div>1_a</div></p><p><div>1_b</div></p></p><p><p><div>2_a</div></p><p><div>2_b</div></p></p></div>"
+  //   );
+  //   widget.state.rows = [2, 1];
+  //   await nextTick();
+  //   expect(fixture.innerHTML).toBe(
+  //     "<div><p><p><div>2_a</div></p><p><div>2_b</div></p></p><p><p><div>1_a</div></p><p><div>1_b</div></p></p></div>"
+  //   );
+  // });
 
-  test("same t-keys in two different places", async () => {
-    class Child extends Component {
-      static template = xml`<span><t t-esc="props.blip"/></span>`;
-    }
+  // test("same t-keys in two different places", async () => {
+  //   class Child extends Component {
+  //     static template = xml`<span><t t-esc="props.blip"/></span>`;
+  //   }
 
-    class Parent extends Component {
-      static template = xml`
-        <div>
-            <div><Child t-key="1" blip="'1'"/></div>
-            <div><Child t-key="1" blip="'2'"/></div>
-        </div>`;
-      static components = { Child };
-    }
+  //   class Parent extends Component {
+  //     static template = xml`
+  //       <div>
+  //           <div><Child t-key="1" blip="'1'"/></div>
+  //           <div><Child t-key="1" blip="'2'"/></div>
+  //       </div>`;
+  //     static components = { Child };
+  //   }
 
-    const widget = new Parent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div><div><span>1</span></div><div><span>2</span></div></div>");
-    expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
-  });
+  //   const widget = new Parent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div><div><span>1</span></div><div><span>2</span></div></div>");
+  //   expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
+  // });
 
-  test("t-key on a component with t-if, and a sibling component", async () => {
-    class Child extends Component {
-      static template = xml`<span>child</span>`;
-    }
+  // test("t-key on a component with t-if, and a sibling component", async () => {
+  //   class Child extends Component {
+  //     static template = xml`<span>child</span>`;
+  //   }
 
-    class Parent extends Component {
-      static template = xml`
-        <div>
-          <Child t-if="false" t-key="'str'"/>
-          <Child/>
-        </div>`;
-      static components = { Child };
-    }
+  //   class Parent extends Component {
+  //     static template = xml`
+  //       <div>
+  //         <Child t-if="false" t-key="'str'"/>
+  //         <Child/>
+  //       </div>`;
+  //     static components = { Child };
+  //   }
 
-    const widget = new Parent();
-    await widget.mount(fixture);
-    expect(fixture.innerHTML).toBe("<div><span>child</span></div>");
-    expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
-  });
+  //   const widget = new Parent();
+  //   await widget.mount(fixture);
+  //   expect(fixture.innerHTML).toBe("<div><span>child</span></div>");
+  //   expect(env.qweb.templates[Parent.template].fn.toString()).toMatchSnapshot();
+  // });
 });
 
 describe("lifecycle hooks", () => {
-  test("willStart hook is called", async () => {
-    let willstart = false;
-    class HookWidget extends Component {
-      static template = xml`<div/>`;
-      async willStart() {
-        willstart = true;
-      }
-    }
-    const widget = new HookWidget();
-    await widget.mount(fixture);
-    expect(willstart).toBe(true);
-  });
+  // test("willStart hook is called", async () => {
+  //   let willstart = false;
+  //   class HookWidget extends Component {
+  //     static template = xml`<div/>`;
+  //     async willStart() {
+  //       willstart = true;
+  //     }
+  //   }
+  //   const widget = new HookWidget();
+  //   await widget.mount(fixture);
+  //   expect(willstart).toBe(true);
+  // });
 
-  test("mounted hook is not called if not in DOM", async () => {
-    let mounted = false;
-    class HookWidget extends Component {
-      static template = xml`<div/>`;
-      async mounted() {
-        mounted = true;
-      }
-    }
-    const widget = new HookWidget();
-    const target = document.createElement("div");
-    await widget.mount(target);
-    expect(mounted).toBe(false);
-  });
+  // test("mounted hook is not called if not in DOM", async () => {
+  //   let mounted = false;
+  //   class HookWidget extends Component {
+  //     static template = xml`<div/>`;
+  //     async mounted() {
+  //       mounted = true;
+  //     }
+  //   }
+  //   const widget = new HookWidget();
+  //   const target = document.createElement("div");
+  //   await widget.mount(target);
+  //   expect(mounted).toBe(false);
+  // });
 
-  test("mounted hook is called if mounted in DOM", async () => {
-    let mounted = false;
-    class HookWidget extends Component {
-      static template = xml`<div/>`;
-      async mounted() {
-        mounted = true;
-      }
-    }
-    const widget = new HookWidget();
-    await widget.mount(fixture);
-    expect(mounted).toBe(true);
-  });
+  // test("mounted hook is called if mounted in DOM", async () => {
+  //   let mounted = false;
+  //   class HookWidget extends Component {
+  //     static template = xml`<div/>`;
+  //     async mounted() {
+  //       mounted = true;
+  //     }
+  //   }
+  //   const widget = new HookWidget();
+  //   await widget.mount(fixture);
+  //   expect(mounted).toBe(true);
+  // });
 
   test("willStart hook is called on subwidget", async () => {
     let ok = false;
@@ -467,28 +467,28 @@ describe("lifecycle hooks", () => {
     expect(ok).toBe(true);
   });
 
-  test("mounted hook is called on subcomponents, in proper order", async () => {
-    const steps: any[] = [];
+  // test("mounted hook is called on subcomponents, in proper order", async () => {
+  //   const steps: any[] = [];
 
-    class ChildWidget extends Component {
-      static template = xml`<div/>`;
-      mounted() {
-        expect(document.body.contains(this.el)).toBe(true);
-        steps.push("child:mounted");
-      }
-    }
+  //   class ChildWidget extends Component {
+  //     static template = xml`<div/>`;
+  //     mounted() {
+  //       expect(document.body.contains(this.el)).toBe(true);
+  //       steps.push("child:mounted");
+  //     }
+  //   }
 
-    class ParentWidget extends Component {
-      static template = xml`<div><ChildWidget /></div>`;
-      static components = { ChildWidget };
-      mounted() {
-        steps.push("parent:mounted");
-      }
-    }
-    const widget = new ParentWidget();
-    await widget.mount(fixture);
-    expect(steps).toEqual(["child:mounted", "parent:mounted"]);
-  });
+  //   class ParentWidget extends Component {
+  //     static template = xml`<div><ChildWidget /></div>`;
+  //     static components = { ChildWidget };
+  //     mounted() {
+  //       steps.push("parent:mounted");
+  //     }
+  //   }
+  //   const widget = new ParentWidget();
+  //   await widget.mount(fixture);
+  //   expect(steps).toEqual(["child:mounted", "parent:mounted"]);
+  // });
 
   test("mounted hook is called on subsubcomponents, in proper order", async () => {
     const steps: any[] = [];

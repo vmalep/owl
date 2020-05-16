@@ -1,12 +1,10 @@
-import { Fiber } from "./fiber";
 import { qweb } from "../qweb/qweb";
-import { RenderContext, QWebTemplate } from "../qweb/types";
-import { scheduler } from "./scheduler";
+import { QWebTemplate } from "../qweb/types";
+import { VRootNode } from "../vdom/types";
 import { buildTree, patch } from "../vdom/vdom";
 import { Component } from "./component";
-import { VRootNode } from "../vdom/types";
-
-const { utils: qwebUtils } = qweb;
+import { Fiber } from "./fiber";
+import { scheduler } from "./scheduler";
 
 // -----------------------------------------------------------------------------
 // Types
@@ -16,7 +14,7 @@ export interface FComponent<T = any, Env = any> {
   template: string;
   components?: { [key: string]: FComponent<any> | CComponent };
   name?: string;
-  setup?: (props: any, env: Env) => T | void;
+  setup?: (props: any, env: Env) => T | Promise<T> | void;
 }
 
 export type CComponent = typeof Component;
@@ -30,16 +28,19 @@ export type FInstance<T = {}, Env = any> = T & {
 };
 
 export interface OwlElement<T = any> {
-  fiber: Fiber;
+  fiber: Fiber | null;
+  name: string;
   components: { [key: string]: FComponent<T> | CComponent };
   isMounted: boolean;
   instance: FInstance<T> | CInstance | null;
-  vnode: VRootNode;
+  vnode: VRootNode | null;
   qweb: QWebTemplate;
+  isReady: Promise<void> | null;
+  children: { [key: string]: OwlElement };
 }
 
 // -----------------------------------------------------------------------------
-// Main owl engine
+// core object
 // -----------------------------------------------------------------------------
 export const core = {
   current: null as null | OwlElement,
@@ -88,8 +89,9 @@ export async function mount(
     throw new Error(message);
   }
   if (info instanceof Component) {
+    // this is a CInstance
     const elem = info.__owl__!;
-    return scheduler.addFiber(elem.fiber).then(() => {
+    return scheduler.addFiber(elem.fiber!).then(() => {
       target.appendChild(info.el!);
       return info;
     });
@@ -99,17 +101,17 @@ export async function mount(
   let env = config.env || {};
   if (info.prototype instanceof Component || info === Component) {
     // this is a CComponent (Class Component)
-    element = makeCComponent(info, props, env);
+    element = createCComponent(info, props, env);
   } else if ("__owl__" in info) {
     // this is a CInstance or a FInstance
     element = info.__owl__;
   } else {
     // this is a FComponent
-    element = makeFComponent(info, props, env);
+    element = createFComponent(info, props, env);
   }
-  return scheduler.addFiber(element.fiber).then(() => {
+  return scheduler.addFiber(element.fiber!).then(() => {
     const fragment = document.createDocumentFragment();
-    buildTree(element.vnode, (fragment as any) as HTMLElement);
+    buildTree(element.vnode!, (fragment as any) as HTMLElement);
     target.appendChild(fragment);
     if (document.body.contains(target)) {
       mountTree(element);
@@ -119,89 +121,104 @@ export async function mount(
 }
 
 function mountTree(element: OwlElement) {
+  for (let k in element.children) {
+    mountTree(element.children[k]);
+  }
   element.isMounted = true;
+  if (element.instance.mounted) {
+    element.instance.mounted();
+  }
 }
 
-function makeFComponent(fn: FComponent, props: any, env: any): OwlElement {
+// -----------------------------------------------------------------------------
+// Component creation
+// -----------------------------------------------------------------------------
+
+export function createFComponent(fn: FComponent, props: any, env: any): OwlElement {
   let template: string = fn.template;
+  const name = fn.name || "Anonymous Function Component";
   if (!template) {
-    const name = fn.name || "Anonymous Function Component";
     throw new Error(`Component "${name}" does not have a template defined!`);
   }
-  const fiber = new Fiber(null);
-  fiber.counter++;
   const qtemplate = qweb.getTemplate(template);
-  const vnode = qtemplate.createRoot();
   const elem: OwlElement = {
-    fiber,
+    fiber: null,
+    name,
     instance: null,
     isMounted: false,
-    vnode,
+    vnode: null,
     components: fn.components || {},
     qweb: qtemplate,
+    isReady: null,
+    children: {},
   };
   core.current = elem;
-  let instance = Object.create(fn.setup ? fn.setup(props, env) || {} : {});
-  instance.props = props;
-  instance.__owl__ = elem;
-  instance.env = env;
 
-  elem.instance = instance;
+  if (fn.setup) {
+    const result = fn.setup(props, env);
+    const prom = result instanceof Promise ? result : Promise.resolve(result);
+    elem.isReady = prom.then((result) => {
+      let instance = result ? Object.create(result) : {};
+      instance.props = props;
+      instance.__owl__ = elem;
+      instance.env = env;
+      elem.instance = instance;
+    });
+  } else {
+    const instance: FInstance = { props, env, __owl__: elem };
+    elem.instance = instance;
+    elem.isReady = Promise.resolve();
+  }
 
-  // next code duplicated with makeCComponent
-  new Promise(async (resolve) => {
-    qtemplate.render(vnode, instance, elem);
-    fiber.counter--;
-    resolve();
-  });
+  startComponent(elem);
   return elem;
 }
 
-function makeCComponent<C extends typeof Component>(C: C, props: any, env: any): OwlElement {
+export function createCComponent<C extends typeof Component>(
+  C: C,
+  props: any,
+  env: any
+): OwlElement {
   let template: string = C.template;
   if (!template) {
     throw new Error(`Component "${C.name}" does not have a template defined!`);
   }
-  const fiber = new Fiber(null);
-  fiber.counter++;
   const qtemplate = qweb.getTemplate(template);
-  const vnode = qtemplate.createRoot();
   const elem: OwlElement = {
-    fiber,
+    fiber: null,
+    name: C.name,
     instance: null,
     isMounted: false,
-    vnode: vnode,
+    vnode: null,
     components: C.components,
     qweb: qtemplate,
+    isReady: null,
+    children: {},
   };
   core.current = elem;
   const component = new C(props, env) as InstanceType<C>;
   component.__owl__ = elem;
   elem.instance = component;
-  vnode.hooks.create = (el) => (component.el = el);
-
-  // next code duplicated with makeFComponent
-  new Promise((resolve) => {
-    qtemplate.render(vnode, component, elem);
-    fiber.counter--;
-    resolve();
-  });
+  elem.isReady = component.willStart();
+  startComponent(elem);
   return elem;
 }
 
-qwebUtils.makeComponent = function (
-  parent: OwlElement,
-  name: string,
-  context: RenderContext,
-  props: any
-): VRootNode {
-  const definition = context[name] || parent.components[name];
-  const isClass = definition.prototype instanceof Component;
-  let component = isClass
-    ? makeCComponent(definition, props, {})
-    : makeFComponent(definition, props, {});
-  return component.vnode;
-};
+// -----------------------------------------------------------------------------
+// starting Components
+// -----------------------------------------------------------------------------
+
+async function startComponent(elem: OwlElement) {
+  const vnode = elem.qweb.createRoot();
+  vnode.hooks.create = (el) => (elem.instance.el = el);
+  const fiber = new Fiber(null);
+  fiber.counter++;
+  elem.fiber = fiber;
+  elem.vnode = vnode;
+  await elem.isReady!;
+  elem.qweb.render(vnode, elem.instance, elem);
+  fiber.counter--;
+}
 
 // -----------------------------------------------------------------------------
 // render
@@ -218,6 +235,6 @@ export function render(elem: OwlElement): Promise<void> {
     resolve();
   });
   return scheduler.addFiber(fiber).then(() => {
-    patch(elem.vnode, newRoot);
+    patch(elem.vnode!, newRoot);
   });
 }

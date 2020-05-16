@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`basic component properties mounting components ccomponent: can handle empty props 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__30\`
+    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
+    let _2 = {val:undefined};
+    vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _2));
+}"
+`;
+
+exports[`basic component properties mounting components fcomponent: can handle empty props 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__32\`
+    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
+    let _2 = {val:undefined};
+    vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _2));
+}"
+`;

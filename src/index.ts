@@ -1,5 +1,5 @@
-import { Component } from "./core/component";
-import { mount } from "./core/rendering_engine";
+import {} from "./components/component";
+import { mount, Component } from "./components/index";
 import { qweb } from "./qweb/qweb";
 import { useState } from "./hooks";
 import { xml } from "./tags";
