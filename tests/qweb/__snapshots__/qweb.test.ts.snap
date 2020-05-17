@@ -114,6 +114,19 @@ exports[`attributes t-att-class and class should combine together 1`] = `
 }"
 `;
 
+exports[`debugging t-debug 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__1\`
+    debugger;
+    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
+    if (true) {
+        debugger;
+        vn1.children.push({type: 5, id: 0});
+    }
+}"
+`;
+
 exports[`foreach does not pollute the rendering context 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {

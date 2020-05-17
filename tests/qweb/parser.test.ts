@@ -23,6 +23,8 @@ function structure(node: AST): any {
       };
     case "T-ELSE":
       return { type: node.type, child: structure(node.child) };
+    case "T-DEBUG":
+      return { type: node.type, child: node.child ? structure(node.child) : null };
     default:
       return { type: node.type };
   }
@@ -256,5 +258,18 @@ describe("qweb parser", () => {
     expect(ast.attrs).toEqual({ class: "abc" });
     expect(ast.attClass).toEqual("d");
     expect(ast.attfClass).toEqual("");
+  });
+
+  test("t with t-debug", () => {
+    const ast = parse(`<t t-debug=""/>`) as ASTDOMNode;
+    expect(ast).toEqual({ type: "T-DEBUG", child: null });
+  });
+
+  test("div with t-debug", () => {
+    const ast = parse(`<div t-debug=""/>`) as ASTDOMNode;
+    expect(structure(ast)).toEqual({
+      type: "T-DEBUG",
+      child: { type: "STATIC", child: { type: "DOM", children: [] } },
+    });
   });
 });

@@ -21,6 +21,7 @@ function parseNode(ctx: ParserContext, node: ChildNode): AST | null {
     return parseTextCommentNode(ctx, node);
   }
   return (
+    parseTDebugNode(ctx, node) ||
     parseTIfNode(ctx, node) ||
     parseTEscNode(ctx, node) ||
     parseTRawNode(ctx, node) ||
@@ -406,4 +407,20 @@ function parseTForeachNode(ctx: ParserContext, node: Element): AST | null {
     collection,
     varName,
   };
+}
+
+// -----------------------------------------------------------------------------
+// t-debug directive
+// -----------------------------------------------------------------------------
+
+function parseTDebugNode(ctx: ParserContext, node: Element): AST | null {
+  if (!node.hasAttribute("t-debug")) {
+    return null;
+  }
+  node.removeAttribute("t-debug");
+  let content = parseNode(ctx, node);
+  if (!content || (content.type === "MULTI" && content.children.length === 0)) {
+    content = null;
+  }
+  return { type: "T-DEBUG", child: content };
 }

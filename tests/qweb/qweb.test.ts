@@ -1859,55 +1859,51 @@ describe("t-key", () => {
   });
 });
 
-// describe("debugging", () => {
-//   test("t-debug", () => {
-//     const consoleLog = console.log;
-//     console.log = jest.fn();
-//     qweb.addTemplate(
-//       "test",
-//       `<div t-debug=""><t t-if="true"><span t-debug="">hey</span></t></div>`
-//     );
-//     qweb.render("test");
-//     expect(qweb.templates.test.fn.toString()).toMatchSnapshot();
+describe("debugging", () => {
+  test("t-debug", () => {
+    const consoleLog = console.log;
+    console.log = jest.fn();
+    const template = xml`<div t-debug=""><t t-if="true"><span t-debug="">hey</span></t></div>`;
+    render(template);
 
-//     expect(console.log).toHaveBeenCalledTimes(1);
-//     console.log = consoleLog;
-//   });
+    expect(console.log).toHaveBeenCalledTimes(1);
+    console.log = consoleLog;
+  });
 
-//   test("t-debug on sub template", () => {
-//     const consoleLog = console.log;
-//     console.log = jest.fn();
-//     qweb.addTemplates(`
-//       <templates>
-//       <p t-name="sub" t-debug="">coucou</p>
-//       <div t-name="test">
-//         <t t-call="sub"/>
-//       </div>
-//       </templates>`);
-//     qweb.render("test");
+  //   test("t-debug on sub template", () => {
+  //     const consoleLog = console.log;
+  //     console.log = jest.fn();
+  //     qweb.addTemplates(`
+  //       <templates>
+  //       <p t-name="sub" t-debug="">coucou</p>
+  //       <div t-name="test">
+  //         <t t-call="sub"/>
+  //       </div>
+  //       </templates>`);
+  //     qweb.render("test");
 
-//     expect(console.log).toHaveBeenCalledTimes(1);
-//     console.log = consoleLog;
-//   });
+  //     expect(console.log).toHaveBeenCalledTimes(1);
+  //     console.log = consoleLog;
+  //   });
 
-//   test("t-log", () => {
-//     const consoleLog = console.log;
-//     console.log = jest.fn();
+  //   test("t-log", () => {
+  //     const consoleLog = console.log;
+  //     console.log = jest.fn();
 
-//     qweb.addTemplate(
-//       "test",
-//       `<div>
-//           <t t-set="foo" t-value="42"/>
-//           <t t-log="foo + 3"/>
-//         </div>`
-//     );
-//     qweb.render("test");
-//     expect(qweb.templates.test.fn.toString()).toMatchSnapshot();
+  //     qweb.addTemplate(
+  //       "test",
+  //       `<div>
+  //           <t t-set="foo" t-value="42"/>
+  //           <t t-log="foo + 3"/>
+  //         </div>`
+  //     );
+  //     qweb.render("test");
+  //     expect(qweb.templates.test.fn.toString()).toMatchSnapshot();
 
-//     expect(console.log).toHaveBeenCalledWith(45);
-//     console.log = consoleLog;
-//   });
-// });
+  //     expect(console.log).toHaveBeenCalledWith(45);
+  //     console.log = consoleLog;
+  //   });
+});
 
 // describe("update on event bus", () => {
 //   test("two consecutive forceUpdates only causes one listener update", async () => {

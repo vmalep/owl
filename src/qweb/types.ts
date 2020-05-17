@@ -114,6 +114,10 @@ export interface ASTCallNode {
   children: AST[];
 }
 
+export interface ASTDebugNode {
+  type: "T-DEBUG";
+  child: AST | null;
+}
 // TODO: add and support nodes of types "BLOCK":
 
 export type AST =
@@ -130,4 +134,5 @@ export type AST =
   | ASTElseNode
   | ASTComponentNode
   | ASTForeachNode
-  | ASTCallNode;
+  | ASTCallNode
+  | ASTDebugNode;

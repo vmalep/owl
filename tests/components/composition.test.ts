@@ -170,21 +170,20 @@ describe("component composition", () => {
       const Child = {
         template: xml`<button t-esc="state.value" t-on-click="state.value++" />`,
         setup() {
-          return { state: useState({ value: 1 })};
-        }
-      }
+          return { state: useState({ value: 1 }) };
+        },
+      };
 
       const Parent = {
         template: xml`<span><Child/></span>`,
         components: { Child },
-      }
+      };
 
       await mount(Parent, fixture);
       fixture.querySelector("button")!.click();
       await nextTick();
       expect(fixture.innerHTML).toBe("<span><button>2</button></span>");
     });
-
   });
 
   describe("various update scenarios", () => {

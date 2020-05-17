@@ -30,6 +30,7 @@ interface CompilerContext {
   shouldDefineRootContext: boolean;
   variables: { [name: string]: QWebVar };
   staticNodes: HTMLElement[];
+  isDebug: boolean;
 }
 
 export function compileTemplate(qweb: QWeb, name: string, template: string): TemplateInfo {
@@ -45,6 +46,7 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
     shouldDefineRootContext: false,
     variables: {},
     staticNodes: [],
+    isDebug: false,
   };
   const descr = name.trim().slice(0, 100).replace(/`/g, "'").replace(/\n/g, "");
   addLine(ctx, `// Template: \`${descr}\``);
@@ -58,6 +60,10 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
   }
   // console.warn(ctx.code.join("\n"));
   const fn = new Function("tree, ctx, metadata", ctx.code.join("\n")) as any;
+  if (ctx.isDebug) {
+    const msg = `Template: ${descr}\nCompiled code:\n${fn.toString()}`;
+    console.log(msg);
+  }
   return {
     fn,
     staticNodes: ctx.staticNodes,
@@ -171,6 +177,13 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       const vnode = `this.makeComponent(metadata, "${ast.name}", ctx, ${id})`;
       addVNode(ctx, vnode, false);
       break;
+    }
+    case "T-DEBUG": {
+      addLine(ctx, `debugger;`);
+      ctx.isDebug = true;
+      if (ast.child) {
+        generateCode(ast.child, ctx);
+      }
     }
   }
 }
