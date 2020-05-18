@@ -1,5 +1,4 @@
-import { compileExpr } from "./expression_parser";
-import { AST, ASTIfNode, ASTDOMNode, ASTStaticNode, ASTElifNode, ASTElseNode } from "./types";
+import { AST, ASTDOMNode, ASTElifNode, ASTElseNode, ASTIfNode, ASTStaticNode } from "./types";
 
 // -----------------------------------------------------------------------------
 // Parser
@@ -25,11 +24,12 @@ function parseNode(ctx: ParserContext, node: ChildNode): AST | null {
     parseTIfNode(ctx, node) ||
     parseTEscNode(ctx, node) ||
     parseTRawNode(ctx, node) ||
-    parseComponentNode(ctx, node) ||
     parseTSetNode(ctx, node) ||
     parseTCallNode(ctx, node) ||
     parseTForeachNode(ctx, node) ||
+    parseTKeyNode(ctx, node) ||
     parseTNode(ctx, node) ||
+    parseComponentNode(ctx, node) ||
     parseDOMNode(ctx, node)
   );
 }
@@ -50,7 +50,6 @@ function parseTextCommentNode(ctx: ParserContext, node: ChildNode): AST | null {
   return {
     type,
     text,
-    // text: "`" + text + "`",
   };
 }
 
@@ -163,26 +162,18 @@ function parseComponentNode(ctx: ParserContext, node: Element): AST | null {
   }
   ctx.isStatic = false;
   const props: { [key: string]: string } = {};
-  let key = "";
 
   const attributes = node.attributes;
   for (let i = 0; i < attributes.length; i++) {
     const name = attributes[i].name;
     const value = attributes[i].textContent!;
-    if (name.startsWith("t-")) {
-      if (name === "t-key") {
-        key = value;
-      }
-    } else {
-      props[name] = value;
-    }
+    props[name] = value;
   }
 
   return {
     type: "COMPONENT",
     name: node.tagName,
     props,
-    key,
   };
 }
 
@@ -238,13 +229,6 @@ function parseChildren(ctx: ParserContext, node: Element): AST[] {
 
 function parseDOMNode(ctx: ParserContext, node: Element): ASTDOMNode | ASTStaticNode {
   let isStatic = true;
-  let key = "1";
-  if (node.hasAttribute("t-key")) {
-    isStatic = false;
-    const keyExpr = node.getAttribute("t-key");
-    key = keyExpr ? compileExpr(keyExpr) : "1";
-    node.removeAttribute("t-key");
-  }
   const attributes = (<Element>node).attributes;
   const handlers: ASTDOMNode["on"] = {};
   let attClass = "";
@@ -276,7 +260,6 @@ function parseDOMNode(ctx: ParserContext, node: Element): ASTDOMNode | ASTStatic
     type: "DOM",
     tag: node.tagName,
     children,
-    key,
     attrs,
     on: handlers,
     attClass,
@@ -400,13 +383,27 @@ function parseTForeachNode(ctx: ParserContext, node: Element): AST | null {
   const varName = node.getAttribute("t-as")!;
   node.removeAttribute("t-foreach");
   node.removeAttribute("t-as");
-  const children = node.tagName === "t" ? parseChildren(ctx, node) : [parseDOMNode(ctx, node)];
+  const contentNode = parseNode(ctx, node)!;
   return {
     type: "T-FOREACH",
-    children,
+    child: contentNode,
     collection,
     varName,
   };
+}
+
+// -----------------------------------------------------------------------------
+// t-key directive
+// -----------------------------------------------------------------------------
+
+function parseTKeyNode(ctx: ParserContext, node: Element): AST | null {
+  if (!node.hasAttribute("t-key")) {
+    return null;
+  }
+  const key = node.getAttribute("t-key")!;
+  node.removeAttribute("t-key");
+  let child = parseNode(ctx, node)!;
+  return { type: "T-KEY", key, child };
 }
 
 // -----------------------------------------------------------------------------
@@ -417,10 +414,11 @@ function parseTDebugNode(ctx: ParserContext, node: Element): AST | null {
   if (!node.hasAttribute("t-debug")) {
     return null;
   }
+  const attr = node.getAttribute("t-debug");
   node.removeAttribute("t-debug");
   let content = parseNode(ctx, node);
   if (!content || (content.type === "MULTI" && content.children.length === 0)) {
     content = null;
   }
-  return { type: "T-DEBUG", child: content };
+  return { type: "T-DEBUG", child: content, ast: attr === "ast" };
 }

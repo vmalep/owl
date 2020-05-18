@@ -29,7 +29,6 @@ export interface ASTDOMNode {
   type: "DOM";
   tag: string;
   children: AST[];
-  key: Key;
   attrs: { [name: string]: string };
   on: { [event: string]: Handler };
   attClass?: string;
@@ -44,8 +43,13 @@ export interface ASTStaticNode {
 export interface ASTComponentNode {
   type: "COMPONENT";
   name: string;
-  key: Key;
   props: { [name: string]: string };
+}
+
+export interface ASTKeyNode {
+  type: "T-KEY";
+  key: Key;
+  child: AST;
 }
 
 export interface ASTTextNode {
@@ -105,7 +109,7 @@ export interface ASTForeachNode {
   type: "T-FOREACH";
   collection: string;
   varName: string;
-  children: AST[];
+  child: AST;
 }
 
 export interface ASTCallNode {
@@ -117,6 +121,7 @@ export interface ASTCallNode {
 export interface ASTDebugNode {
   type: "T-DEBUG";
   child: AST | null;
+  ast?: boolean;
 }
 // TODO: add and support nodes of types "BLOCK":
 
@@ -135,4 +140,5 @@ export type AST =
   | ASTComponentNode
   | ASTForeachNode
   | ASTCallNode
+  | ASTKeyNode
   | ASTDebugNode;

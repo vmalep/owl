@@ -3,10 +3,11 @@ import { AST, ASTDOMNode } from "../../src/qweb/types";
 
 function structure(node: AST): any {
   switch (node.type) {
+    case "T-KEY":
     case "STATIC":
-      return { type: "STATIC", child: structure(node.child) };
-    case "MULTI":
     case "T-FOREACH":
+      return { type: node.type, child: structure(node.child) };
+    case "MULTI":
     case "T-CALL":
     case "DOM":
       return { type: node.type, children: node.children.map(structure) };
@@ -173,7 +174,10 @@ describe("qweb parser", () => {
       children: [
         {
           type: "T-FOREACH",
-          children: [{ type: "STATIC", child: { type: "DOM", children: [] } }],
+          child: {
+            type: "T-KEY",
+            child: { type: "STATIC", child: { type: "DOM", children: [] } },
+          },
         },
       ],
     });
@@ -211,7 +215,6 @@ describe("qweb parser", () => {
       type: "COMPONENT",
       name: "MyComponent",
       props: { a: "valueA", b: "valueB" },
-      key: "",
     });
   });
 
@@ -219,21 +222,13 @@ describe("qweb parser", () => {
     const ast = parse(`<div><MyComponent t-key="blip" /></div>`);
     const compNode = (ast as any).children[0];
     expect(compNode).toEqual({
-      type: "COMPONENT",
-      name: "MyComponent",
-      props: {},
+      type: "T-KEY",
       key: "blip",
-    });
-  });
-
-  test("dom node and component with directive", () => {
-    const ast = parse(`<div><MyComponent a="a" t-some-directive="" /></div>`);
-    const compNode = (ast as any).children[0];
-    expect(compNode).toEqual({
-      type: "COMPONENT",
-      name: "MyComponent",
-      props: { a: "a" },
-      key: "",
+      child: {
+        type: "COMPONENT",
+        name: "MyComponent",
+        props: {},
+      },
     });
   });
 
@@ -262,7 +257,12 @@ describe("qweb parser", () => {
 
   test("t with t-debug", () => {
     const ast = parse(`<t t-debug=""/>`) as ASTDOMNode;
-    expect(ast).toEqual({ type: "T-DEBUG", child: null });
+    expect(ast).toEqual({ type: "T-DEBUG", child: null, ast: false });
+  });
+
+  test("t with t-debug=ast", () => {
+    const ast = parse(`<t t-debug="ast"/>`) as ASTDOMNode;
+    expect(ast).toEqual({ type: "T-DEBUG", child: null, ast: true });
   });
 
   test("div with t-debug", () => {
@@ -270,6 +270,42 @@ describe("qweb parser", () => {
     expect(structure(ast)).toEqual({
       type: "T-DEBUG",
       child: { type: "STATIC", child: { type: "DOM", children: [] } },
+    });
+  });
+
+  test("t-key on div", () => {
+    const ast = parse(`<div t-key="abc"/>`);
+    expect(structure(ast)).toEqual({
+      type: "T-KEY",
+      child: { type: "STATIC", child: { type: "DOM", children: [] } },
+    });
+  });
+
+  test("t-key on t foreach", () => {
+    const ast = parse(`
+        <t t-foreach="items" t-as="item" t-key="item.id">
+          <div><t t-esc="item.title"/></div>
+        </t>`);
+    expect(structure(ast)).toEqual({
+      type: "T-FOREACH",
+      child: { type: "T-KEY", child: { type: "DOM", children: [{ type: "T-ESC", children: [] }] } },
+    });
+  });
+
+  test("t-key on span foreach", () => {
+    const ast = parse(`
+        <span t-foreach="items" t-as="item" t-key="item.id">
+          <div><t t-esc="item.title"/></div>
+        </span>`);
+    expect(structure(ast)).toEqual({
+      type: "T-FOREACH",
+      child: {
+        type: "T-KEY",
+        child: {
+          type: "DOM",
+          children: [{ type: "DOM", children: [{ type: "T-ESC", children: [] }] }],
+        },
+      },
     });
   });
 });

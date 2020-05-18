@@ -4,9 +4,9 @@ exports[`basic component properties mounting components ccomponent: can handle e
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__30\`
-    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
-    let _2 = {val:undefined};
-    vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _2));
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let _3 = {val:undefined};
+    vn2.children.push(this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3));
 }"
 `;
 
@@ -14,8 +14,8 @@ exports[`basic component properties mounting components fcomponent: can handle e
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__32\`
-    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
-    let _2 = {val:undefined};
-    vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _2));
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let _3 = {val:undefined};
+    vn2.children.push(this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3));
 }"
 `;

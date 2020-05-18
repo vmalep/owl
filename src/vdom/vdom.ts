@@ -170,6 +170,11 @@ export function patch(vnode: VNode, target: VNode, staticNodes: HTMLElement[] = 
       (target as VStaticNode).el = vnode.el;
       break;
     case NodeType.Root:
+      if (vnode === target) {
+        // this occurs when we reach a sub component. In that case, we do not
+        // want to continue the patching process.
+        return;
+      }
       if (isSame(vnode.child!, (target as VRootNode).child!)) {
         patch(vnode.child!, (target as VRootNode).child!, staticNodes);
       } else {

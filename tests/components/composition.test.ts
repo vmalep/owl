@@ -184,6 +184,31 @@ describe("component composition", () => {
       await nextTick();
       expect(fixture.innerHTML).toBe("<span><button>2</button></span>");
     });
+
+    test("a class component with props and state inside a class component", async () => {
+      class Child extends Component {
+        static template = xml`
+          <button t-on-click="state.value++">
+            <t t-esc="state.value"/>|<t t-esc="props.value"/>
+          </button>`;
+        state = useState({ value: 1 });
+      }
+
+      class Parent extends Component {
+        static template = xml`<span><Child value="state.value"/></span>`;
+        static components = { Child };
+        state = useState({ value: 444 });
+      }
+
+      const parent = await mount(Parent, fixture);
+      expect(fixture.innerHTML).toBe("<span><button>1|444</button></span>");
+      fixture.querySelector("button")!.click();
+      await nextTick();
+      expect(fixture.innerHTML).toBe("<span><button>2|444</button></span>");
+      parent.state.value++;
+      await nextTick();
+      expect(fixture.innerHTML).toBe("<span><button>2|445</button></span>");
+    });
   });
 
   describe("various update scenarios", () => {
@@ -260,6 +285,7 @@ describe("component composition", () => {
       expect(fixture.innerHTML).toBe(
         "<div><p><p><div>2_a</div></p><p><div>2_b</div></p></p><p><p><div>1_a</div></p><p><div>1_b</div></p></p></div>"
       );
+      expect(qweb.compiledTemplates[Parent.template].fn.toString()).toMatchSnapshot();
     });
 
     test("same t-keys in two different places", async () => {

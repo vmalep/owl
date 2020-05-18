@@ -211,30 +211,38 @@ export function createCComponent<C extends typeof Component>(
 async function startComponent(elem: OwlElement) {
   const vnode = elem.qweb.createRoot();
   vnode.hooks.create = (el) => (elem.instance.el = el);
-  const fiber = new Fiber(null);
-  fiber.counter++;
+  const fiber = new Fiber(elem, null, vnode);
+  fiber.root.counter++;
   elem.fiber = fiber;
   elem.vnode = vnode;
   await elem.isReady!;
   elem.qweb.render(vnode, elem.instance, elem);
-  fiber.counter--;
+  fiber.root.counter--;
 }
 
+export function renderToFiber(elem: OwlElement, parentFiber: Fiber | null): Fiber {
+  const newRoot = elem.qweb.createRoot();
+  const fiber = new Fiber(elem, parentFiber, newRoot);
+  elem.fiber = fiber;
+  fiber.root.counter++;
+  new Promise((resolve) => {
+    elem.qweb.render(newRoot, elem.instance!, elem);
+    fiber.root.counter--;
+    resolve();
+  });
+  return fiber;
+}
 // -----------------------------------------------------------------------------
 // render
 // -----------------------------------------------------------------------------
 
 export function render(elem: OwlElement): Promise<void> {
-  const fiber = new Fiber(null);
-  const newRoot = elem.qweb.createRoot();
-  elem.fiber = fiber;
-  fiber.counter = 1;
-  new Promise((resolve) => {
-    elem.qweb.render(newRoot, elem.instance!, elem);
-    fiber.counter--;
-    resolve();
-  });
+  let fiber = renderToFiber(elem, null);
   return scheduler.addFiber(fiber).then(() => {
-    patch(elem.vnode!, newRoot);
+    patch(elem.vnode!, fiber.vnode!);
+    while (fiber.next) {
+      fiber = fiber.next;
+      patch(fiber.elem.vnode!, fiber.vnode!);
+    }
   });
 }

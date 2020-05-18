@@ -3,28 +3,66 @@
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__26\`
-    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
-    let _3 = ctx['state'].s;
-    let length2 = _3.length;
+    // Template: \`__template__28\`
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let _4 = ctx['state'].s;
+    let length3 = _4.length;
     ctx = Object.create(ctx);
-    for (let i = 0; i < length2; i++) {
-        ctx.section_first = i === 0;
-        ctx.section_last = i === length2 - 1;
-        ctx.section = _3[i];
-        ctx.section_index = i;
-        ctx.section_value = _3[i];
-        let _5 = ctx['section'].blips;
-        let length4 = _5.length;
+    for (let i0 = 0; i0 < length3; i0++) {
+        ctx.section_first = i0 === 0;
+        ctx.section_last = i0 === length3 - 1;
+        ctx.section = _4[i0];
+        ctx.section_index = i0;
+        ctx.section_value = _4[i0];
+        let _6 = ctx['section'].blips;
+        let length5 = _6.length;
         ctx = Object.create(ctx);
-        for (let i = 0; i < length4; i++) {
-            ctx.blip_first = i === 0;
-            ctx.blip_last = i === length4 - 1;
-            ctx.blip = _5[i];
-            ctx.blip_index = i;
-            ctx.blip_value = _5[i];
-            let _6 = {blip:ctx['blip']};
-            vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _6));
+        for (let i1 = 0; i1 < length5; i1++) {
+            ctx.blip_first = i1 === 0;
+            ctx.blip_last = i1 === length5 - 1;
+            ctx.blip = _6[i1];
+            ctx.blip_index = i1;
+            ctx.blip_value = _6[i1];
+            let _7 = {blip:ctx['blip']};
+            vn2.children.push(this.makeComponent(\`k8__\${i0}__\${i1}\`, metadata, \\"Child\\", ctx, _7));
+        }
+        ctx = ctx.__proto__;
+    }
+    ctx = ctx.__proto__;
+}"
+`;
+
+exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach, 2 1`] = `
+"function anonymous(tree, ctx, metadata
+) {
+    // Template: \`__template__30\`
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let _4 = ctx['state'].rows;
+    let length3 = _4.length;
+    ctx = Object.create(ctx);
+    for (let i0 = 0; i0 < length3; i0++) {
+        ctx.row_first = i0 === 0;
+        ctx.row_last = i0 === length3 - 1;
+        ctx.row = _4[i0];
+        ctx.row_index = i0;
+        ctx.row_value = _4[i0];
+        let key5 = ctx['row'];
+        const vn7 = {type: 2, tag: \\"p\\", children: [], key: \`k6__\${key5}\`};
+        vn2.children.push(vn7);
+        let _9 = ctx['state'].cols;
+        let length8 = _9.length;
+        ctx = Object.create(ctx);
+        for (let i1 = 0; i1 < length8; i1++) {
+            ctx.col_first = i1 === 0;
+            ctx.col_last = i1 === length8 - 1;
+            ctx.col = _9[i1];
+            ctx.col_index = i1;
+            ctx.col_value = _9[i1];
+            let key10 = ctx['col'];
+            const vn12 = {type: 2, tag: \\"p\\", children: [], key: \`k11__\${key10}\`};
+            vn7.children.push(vn12);
+            let _13 = {row:ctx['row'],col:ctx['col']};
+            vn12.children.push(this.makeComponent(\`k14__\${key5}__\${key10}\`, metadata, \\"Child\\", ctx, _13));
         }
         ctx = ctx.__proto__;
     }
@@ -35,29 +73,32 @@ exports[`component composition various update scenarios reconciliation alg works
 exports[`component composition various update scenarios same t-keys in two different places 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__30\`
-    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: 1};
-    vn1.children.push(vn2);
-    let _3 = {blip:'1'};
-    vn2.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _3));
-    const vn5 = {type: 2, tag: \\"div\\", children: [], key: 1};
-    vn1.children.push(vn5);
-    let _6 = {blip:'2'};
-    vn5.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _6));
+    // Template: \`__template__32\`
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn4 = {type: 2, tag: \\"div\\", children: [], key: \`k3\`};
+    vn2.children.push(vn4);
+    let key5 = 1;
+    let _6 = {blip:'1'};
+    vn4.children.push(this.makeComponent(\`k7__\${key5}\`, metadata, \\"Child\\", ctx, _6));
+    const vn10 = {type: 2, tag: \\"div\\", children: [], key: \`k9\`};
+    vn2.children.push(vn10);
+    let key11 = 1;
+    let _12 = {blip:'2'};
+    vn10.children.push(this.makeComponent(\`k13__\${key11}\`, metadata, \\"Child\\", ctx, _12));
 }"
 `;
 
 exports[`component composition various update scenarios t-key on a component with t-if, and a sibling component 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__32\`
-    const vn1 = tree.child = {type: 2, tag: \\"div\\", children: [], key: 1};
+    // Template: \`__template__34\`
+    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (false) {
-        let _2 = {};
-        vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _2));
+        let key3 = 'str';
+        let _4 = {};
+        vn2.children.push(this.makeComponent(\`k5__\${key3}\`, metadata, \\"Child\\", ctx, _4));
     }
-    let _4 = {};
-    vn1.children.push(this.makeComponent(metadata, \\"Child\\", ctx, _4));
+    let _7 = {};
+    vn2.children.push(this.makeComponent(\`k8\`, metadata, \\"Child\\", ctx, _7));
 }"
 `;

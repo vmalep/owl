@@ -30,12 +30,13 @@ interface CompilerContext {
   shouldDefineRootContext: boolean;
   variables: { [name: string]: QWebVar };
   staticNodes: HTMLElement[];
-  isDebug: boolean;
+  isDebug: boolean | "ast";
+  loopIndex: number;
+  path: string[];
 }
 
 export function compileTemplate(qweb: QWeb, name: string, template: string): TemplateInfo {
   const ast = parse(template);
-  // console.warn(JSON.stringify(ast, null, 3))
   const ctx: CompilerContext = {
     qweb,
     currentParent: "tree",
@@ -47,6 +48,8 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
     variables: {},
     staticNodes: [],
     isDebug: false,
+    loopIndex: 0,
+    path: [],
   };
   const descr = name.trim().slice(0, 100).replace(/`/g, "'").replace(/\n/g, "");
   addLine(ctx, `// Template: \`${descr}\``);
@@ -58,11 +61,15 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
   if (ctx.shouldDefineRootContext) {
     ctx.code.splice(1, 0, `    const rootCtx = ctx;`);
   }
-  // console.warn(ctx.code.join("\n"));
   const fn = new Function("tree, ctx, metadata", ctx.code.join("\n")) as any;
   if (ctx.isDebug) {
-    const msg = `Template: ${descr}\nCompiled code:\n${fn.toString()}`;
-    console.log(msg);
+    if (ctx.isDebug === "ast") {
+      const msg = `Template: ${descr}\AST:\n${JSON.stringify(ast, null, 3)}`;
+      console.log(msg);
+    } else {
+      const msg = `Template: ${descr}\nCompiled code:\n${fn.toString()}`;
+      console.log(msg);
+    }
   }
   return {
     fn,
@@ -97,6 +104,15 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       break;
     case "T-RAW":
       compileRawNode(ctx, ast);
+      break;
+    case "T-KEY":
+      const keyId = uniqueId(ctx, "key");
+      addLine(ctx, `let ${keyId} = ${compileExpr(ast.key)};`);
+      const currentPath = ctx.path;
+      ctx.path = currentPath.slice();
+      ctx.path.splice(-1, 1, keyId);
+      generateCode(ast.child, ctx);
+      ctx.path = currentPath;
       break;
     case "T-IF": {
       addIf(ctx, compileExpr(ast.condition));
@@ -151,18 +167,23 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       {
         const colLength = uniqueId(ctx, "length");
         const colId = uniqueId(ctx);
+        const varname = `i${ctx.loopIndex}`;
         addLine(ctx, `let ${colId} = ${compileExpr(ast.collection)};`);
         addLine(ctx, `let ${colLength} = ${colId}.length;`);
         addLine(ctx, `ctx = Object.create(ctx);`);
-        addLine(ctx, `for (let i = 0; i < ${colLength}; i++) {`);
+        addLine(ctx, `for (let ${varname} = 0; ${varname} < ${colLength}; ${varname}++) {`);
         ctx.indentLevel++;
-        addLine(ctx, `ctx.${ast.varName}_first = i === 0;`);
-        addLine(ctx, `ctx.${ast.varName}_last = i === ${colLength} - 1;`);
-        addLine(ctx, `ctx.${ast.varName} = ${colId}[i];`);
-        addLine(ctx, `ctx.${ast.varName}_index = i;`);
-        addLine(ctx, `ctx.${ast.varName}_value = ${colId}[i];`);
-        generateCode(ast.children, ctx);
+        ctx.loopIndex++;
+        ctx.path.push(varname);
+        addLine(ctx, `ctx.${ast.varName}_first = ${varname} === 0;`);
+        addLine(ctx, `ctx.${ast.varName}_last = ${varname} === ${colLength} - 1;`);
+        addLine(ctx, `ctx.${ast.varName} = ${colId}[${varname}];`);
+        addLine(ctx, `ctx.${ast.varName}_index = ${varname};`);
+        addLine(ctx, `ctx.${ast.varName}_value = ${colId}[${varname}];`);
+        generateCode(ast.child, ctx);
         ctx.indentLevel--;
+        ctx.loopIndex--;
+        ctx.path.pop();
         addLine(ctx, "}");
         addLine(ctx, `ctx = ctx.__proto__;`);
       }
@@ -174,13 +195,14 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
         props.push(`${p}:${compileExpr(ast.props[p])}`);
       }
       addLine(ctx, `let ${id} = {${props.join(",")}};`);
-      const vnode = `this.makeComponent(metadata, "${ast.name}", ctx, ${id})`;
+      let key = generateKey(ctx, true);
+      const vnode = `this.makeComponent(${key}, metadata, "${ast.name}", ctx, ${id})`;
       addVNode(ctx, vnode, false);
       break;
     }
     case "T-DEBUG": {
       addLine(ctx, `debugger;`);
-      ctx.isDebug = true;
+      ctx.isDebug = ast.ast ? "ast" : true;
       if (ast.child) {
         generateCode(ast.child, ctx);
       }
@@ -335,11 +357,17 @@ function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   }
 
   // final code
-  const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${ast.key}${handlers}${classObj}}`;
+  const key = generateKey(ctx);
+  const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${key}${handlers}${classObj}}`;
   const id = addVNode(ctx, vnode, ast.children.length > 0);
   withParent(ctx, id, () => {
     generateCode(ast.children, ctx);
   });
+}
+
+function generateKey(ctx: CompilerContext, full: boolean = false): string {
+  const pathKey = (full ? ctx.path : ctx.path.slice(-1)).map((k) => "${" + k + "}");
+  return "`" + [uniqueId(ctx, "k")].concat(pathKey).join("__") + "`";
 }
 
 // -----------------------------------------------------------------------------
