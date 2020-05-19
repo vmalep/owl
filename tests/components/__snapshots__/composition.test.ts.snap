@@ -3,7 +3,7 @@
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__28\`
+    // Template: \`__template__30\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].s;
     let length3 = _4.length;
@@ -35,7 +35,7 @@ exports[`component composition various update scenarios reconciliation alg works
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach, 2 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__30\`
+    // Template: \`__template__32\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].rows;
     let length3 = _4.length;
@@ -73,7 +73,7 @@ exports[`component composition various update scenarios reconciliation alg works
 exports[`component composition various update scenarios same t-keys in two different places 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__32\`
+    // Template: \`__template__34\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     const vn4 = {type: 2, tag: \\"div\\", children: [], key: \`k3\`};
     vn2.children.push(vn4);
@@ -91,7 +91,7 @@ exports[`component composition various update scenarios same t-keys in two diffe
 exports[`component composition various update scenarios t-key on a component with t-if, and a sibling component 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
-    // Template: \`__template__34\`
+    // Template: \`__template__36\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (false) {
         let key3 = 'str';

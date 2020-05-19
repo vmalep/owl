@@ -209,6 +209,37 @@ describe("component composition", () => {
       await nextTick();
       expect(fixture.innerHTML).toBe("<span><button>2|445</button></span>");
     });
+
+    test("a function component with props and state inside a function component", async () => {
+      const Child = {
+        template: xml`
+          <button t-on-click="state.value++">
+            <t t-esc="state.value"/>|<t t-esc="props.value"/>
+          </button>`,
+        setup() {
+          const state = useState({ value: 1 });
+          return { state };
+        },
+      };
+
+      const Parent = {
+        template: xml`<span><Child value="state.value"/></span>`,
+        components: { Child },
+        setup() {
+          const state = useState({ value: 444 });
+          return { state };
+        },
+      };
+
+      const parent = await mount(Parent, fixture);
+      expect(fixture.innerHTML).toBe("<span><button>1|444</button></span>");
+      fixture.querySelector("button")!.click();
+      await nextTick();
+      expect(fixture.innerHTML).toBe("<span><button>2|444</button></span>");
+      parent.state.value++;
+      await nextTick();
+      expect(fixture.innerHTML).toBe("<span><button>2|445</button></span>");
+    });
   });
 
   describe("various update scenarios", () => {
