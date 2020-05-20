@@ -155,7 +155,7 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
     case "MULTI": {
       const vnode = `{type: ${NodeType.Multi}, children:[]}`;
       const id = addVNode(ctx, vnode, ast.children.length > 0);
-      withParent(ctx, id, () => {
+      withSubContext(ctx, { currentParent: id }, () => {
         generateCode(ast.children, ctx);
       });
       break;
@@ -251,11 +251,14 @@ function addVNode(ctx: CompilerContext, str: string, keepRef: boolean = true): s
   return id;
 }
 
-function withParent(ctx: CompilerContext, parent: string, cb: Function) {
-  const current = ctx.currentParent;
-  ctx.currentParent = parent;
+function withSubContext(ctx: CompilerContext, subCtx: Partial<CompilerContext>, cb: Function) {
+  const currentValues: Partial<CompilerContext> = {};
+  for (let k in subCtx) {
+    (currentValues as any)[k] = (ctx as any)[k];
+    (ctx as any)[k] = (subCtx as any)[k];
+  }
   cb();
-  ctx.currentParent = current;
+  Object.assign(ctx, currentValues);
 }
 
 function addLine(ctx: CompilerContext, code: string) {
@@ -360,7 +363,7 @@ function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   const key = generateKey(ctx);
   const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${key}${handlers}${classObj}}`;
   const id = addVNode(ctx, vnode, ast.children.length > 0);
-  withParent(ctx, id, () => {
+  withSubContext(ctx, { currentParent: id }, () => {
     generateCode(ast.children, ctx);
   });
 }
@@ -382,7 +385,7 @@ function compileSetNode(ctx: CompilerContext, ast: ASTSetNode) {
   if (ast.body.length && ast.value === null) {
     let id = uniqueId(ctx);
     addLine(ctx, `let ${id} = new this.VDomArray();`);
-    withParent(ctx, id, () => {
+    withSubContext(ctx, { currentParent: id }, () => {
       generateCode(ast.body, ctx);
     });
     addLine(ctx, `ctx.${ast.name} = ${id};`);
@@ -391,7 +394,7 @@ function compileSetNode(ctx: CompilerContext, ast: ASTSetNode) {
     addIf(ctx, `!ctx.${ast.name}`);
     let id = uniqueId(ctx);
     addLine(ctx, `let ${id} = new this.VDomArray();`);
-    withParent(ctx, id, () => {
+    withSubContext(ctx, { currentParent: id }, () => {
       generateCode(ast.body, ctx);
     });
     addLine(ctx, `ctx.${ast.name} = ${id}`);
@@ -499,7 +502,7 @@ function compileCallNode(ctx: CompilerContext, ast: ASTCallNode) {
       ctx,
       `const ${id} = {type: ${NodeType.Multi}, children: [], staticNodes: tree.staticNodes};`
     );
-    withParent(ctx, id, () => {
+    withSubContext(ctx, { currentParent: id }, () => {
       generateCode(ast.children, ctx);
     });
     addLine(ctx, `ctx[this.zero] = ${id};`);
