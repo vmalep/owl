@@ -30,6 +30,7 @@ describe("basic component properties", () => {
 
       await mount(Test, fixture);
       expect(fixture.innerHTML).toBe("<div>simple vnode</div>");
+      expect(qweb.compiledTemplates[Test.template].fn).toMatchSnapshot();
     });
 
     test("can mount a simple class component", async () => {
