@@ -216,7 +216,7 @@ async function startComponent(elem: OwlElement) {
   elem.fiber = fiber;
   elem.vnode = vnode;
   await elem.isReady!;
-  elem.qweb.render(vnode, elem.instance, elem);
+  vnode.child = elem.qweb.render(elem.instance, elem);
   fiber.root.counter--;
 }
 
@@ -226,7 +226,7 @@ export function renderToFiber(elem: OwlElement, parentFiber: Fiber | null): Fibe
   elem.fiber = fiber;
   fiber.root.counter++;
   new Promise((resolve) => {
-    elem.qweb.render(newRoot, elem.instance!, elem);
+    newRoot.child = elem.qweb.render(elem.instance!, elem);
     fiber.root.counter--;
     resolve();
   });

@@ -16,7 +16,7 @@ function renderToDOM(
   const template = qweb.getTemplate(templateName);
   expect(qweb.compiledTemplates[templateName].fn.toString()).toMatchSnapshot();
   const tree = template.createRoot();
-  template.render(tree, context, extra);
+  tree.child = template.render(context, extra);
   const div = document.createElement("div");
   buildTree(tree, div);
   return div;
@@ -1623,7 +1623,7 @@ describe("t-on", () => {
   //     expect(steps).toEqual([1, 2]);
   //   });
 
-  //   test("t-on with empty handler (only modifiers)", () => {
+  //   test("t-on with empty handler (`only modifiers)", () => {
   //     expect.assertions(2);
   //     qweb.addTemplate(
   //       "test",
@@ -1795,7 +1795,7 @@ describe("special cases for some boolean html attributes/properties", () => {
 });
 
 describe("whitespace handling", () => {
-  test("white space only text nodes are condensed into a single space", () => {
+  test("white space `only text nodes are condensed into a single space", () => {
     const template = xml`<div>  </div>`;
     const result = render(template);
     expect(result).toBe(`<div> </div>`);
@@ -1807,7 +1807,7 @@ describe("whitespace handling", () => {
     expect(result).toBe(`<div> abc </div>`);
   });
 
-  test("whitespace only text nodes with newlines are removed", () => {
+  test("whitespace `only text nodes with newlines are removed", () => {
     const template = xml`
       <div>
         <span>abc</span>

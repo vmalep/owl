@@ -23,7 +23,7 @@ interface QWebVar {
 
 interface CompilerContext {
   qweb: QWeb;
-  currentParent: string;
+  currentParent: string | null;
   code: string[];
   nextId: number;
   indentLevel: number;
@@ -35,13 +35,32 @@ interface CompilerContext {
   loopIndex: number;
   path: string[];
   templateName: string;
+  roots: string[];
+}
+
+function shouldDefineMultiRoot(ast: AST): boolean {
+  switch (ast.type) {
+    case "DOM":
+    case "STATIC":
+    case "T-CALL":
+    case "MULTI":
+    case "T-ESC":
+    case "T-RAW":
+    case "TEXT":
+      return false;
+    case "T-DEBUG":
+    case "T-KEY":
+      return ast.child ? shouldDefineMultiRoot(ast.child) : true;
+    default:
+      return true;
+  }
 }
 
 export function compileTemplate(qweb: QWeb, name: string, template: string): TemplateInfo {
   const ast = parse(template);
   const ctx: CompilerContext = {
     qweb,
-    currentParent: "tree",
+    currentParent: null,
     code: [],
     nextId: 1,
     indentLevel: 0,
@@ -53,10 +72,16 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
     loopIndex: 0,
     path: [],
     templateName: name,
+    roots: [],
   };
   const descr = name.trim().slice(0, 100).replace(/`/g, "'").replace(/\n/g, "");
   addLine(ctx, `// Template: \`${descr}\``);
 
+  const isMulti = shouldDefineMultiRoot(ast);
+  if (isMulti) {
+    addLine(ctx, `let vn0 = {type: ${NodeType.Multi}, children: []};`);
+    ctx.currentParent = "vn0";
+  }
   generateCode(ast, ctx);
   if (ctx.shouldProtectContext) {
     ctx.code.splice(1, 0, `    ctx = Object.create(ctx);`);
@@ -64,7 +89,15 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
   if (ctx.shouldDefineRootContext) {
     ctx.code.splice(1, 0, `    const rootCtx = ctx;`);
   }
-  const fn = new Function("tree, ctx, metadata", ctx.code.join("\n")) as any;
+  if (isMulti) {
+    addLine(ctx, `return vn0;`);
+  } else if (ctx.roots.length > 1) {
+    addLine(ctx, `return {type: ${NodeType.Multi}, children: ${ctx.roots}};`);
+  } else {
+    addLine(ctx, `return ${ctx.roots[0]};`);
+  }
+  // console.warn(ctx.code.join("\n"));
+  const fn = new Function("ctx, metadata", ctx.code.join("\n")) as any;
   if (ctx.isDebug) {
     if (ctx.isDebug === "ast") {
       const msg = `Template: ${descr}\AST:\n${JSON.stringify(ast, null, 3)}`;
@@ -92,7 +125,7 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       break;
     case "TEXT": {
       const vnode = `{type: ${NodeType.Text}, text: \`${ast.text}\`, el: null}`;
-      addVNode(ctx, vnode, false);
+      addVNode(ctx, vnode);
       break;
     }
     case "STATIC":
@@ -151,12 +184,12 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
 
     case "COMMENT": {
       const vnode = `{type: ${NodeType.Comment}, text: \`${ast.text}\`, el: null}`;
-      addVNode(ctx, vnode, false);
+      addVNode(ctx, vnode);
       break;
     }
     case "MULTI": {
       const vnode = `{type: ${NodeType.Multi}, children:[]}`;
-      const id = addVNode(ctx, vnode, ast.children.length > 0);
+      const id = addVNode(ctx, vnode);
       withSubContext(ctx, { currentParent: id }, () => {
         generateCode(ast.children, ctx);
       });
@@ -199,7 +232,7 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       addLine(ctx, `let ${id} = {${props.join(",")}};`);
       let key = generateKey(ctx, true);
       const vnode = `this.makeComponent(${key}, metadata, "${ast.name}", ctx, ${id})`;
-      addVNode(ctx, vnode, false);
+      addVNode(ctx, vnode);
       break;
     }
     case "T-DEBUG": {
@@ -230,25 +263,17 @@ function uniqueId(ctx: CompilerContext, prefix: string = "_"): string {
   return prefix + String(ctx.nextId++);
 }
 
-function addVNode(ctx: CompilerContext, str: string, keepRef: boolean = true): string {
+function addVNode(ctx: CompilerContext, str: string): string {
   const id = uniqueId(ctx, "vn");
-  if (ctx.currentParent === "tree") {
-    if (keepRef) {
-      addLine(ctx, `const ${id} = tree.child = ${str};`);
+  addLine(ctx, `const ${id} = ${str};`);
+  if (ctx.currentParent) {
+    if (ctx.currentParent.startsWith("_")) {
+      addLine(ctx, `${ctx.currentParent}.push(${id});`);
     } else {
-      addLine(ctx, `tree.child = ${str};`);
+      addLine(ctx, `${ctx.currentParent}.children.push(${id});`);
     }
   } else {
-    let expr = ctx.currentParent;
-    if (ctx.currentParent.startsWith("vn")) {
-      expr = expr + ".children";
-    }
-    if (keepRef) {
-      addLine(ctx, `const ${id} = ${str};`);
-      addLine(ctx, `${expr}.push(${id});`);
-    } else {
-      addLine(ctx, `${expr}.push(${str});`);
-    }
+    ctx.roots.push(id);
   }
   return id;
 }
@@ -364,7 +389,7 @@ function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   // final code
   const key = generateKey(ctx);
   const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${key}${handlers}${classObj}}`;
-  const id = addVNode(ctx, vnode, ast.children.length > 0);
+  const id = addVNode(ctx, vnode);
   withSubContext(ctx, { currentParent: id }, () => {
     generateCode(ast.children, ctx);
   });
@@ -422,7 +447,7 @@ function compileSetNode(ctx: CompilerContext, ast: ASTSetNode) {
 
 function compileEscNode(ctx: CompilerContext, ast: ASTEscNode) {
   if (ast.expr === "0") {
-    addVNode(ctx, `{type: ${NodeType.Text}, text: this.vMultiToString(ctx[this.zero])}`, false);
+    addVNode(ctx, `{type: ${NodeType.Text}, text: ctx[this.zero]}`);
     return;
   }
   const expr = compileExpr(ast.expr);
@@ -430,7 +455,7 @@ function compileEscNode(ctx: CompilerContext, ast: ASTEscNode) {
     const id = uniqueId(ctx);
     addLine(ctx, `let ${id} = ${expr}`);
     addIf(ctx, `${id} !== undefined`);
-    addVNode(ctx, `{type: ${NodeType.Text}, text: ${id}, el: null}`, false);
+    addVNode(ctx, `{type: ${NodeType.Text}, text: ${id}, el: null}`);
     ctx.indentLevel--;
     addLine(ctx, `} else {`);
     ctx.indentLevel++;
@@ -444,7 +469,7 @@ function compileEscNode(ctx: CompilerContext, ast: ASTEscNode) {
       }
     }
     const vnode = `{type: ${NodeType.Text}, text: ${expr}, el: null}`;
-    addVNode(ctx, vnode, false);
+    addVNode(ctx, vnode);
   }
 }
 
@@ -454,7 +479,7 @@ function compileEscNode(ctx: CompilerContext, ast: ASTEscNode) {
 
 function compileRawNode(ctx: CompilerContext, ast: ASTRawNode) {
   if (ast.expr === "0") {
-    addVNode(ctx, `ctx[this.zero]`, false);
+    addVNode(ctx, `ctx[this.zero]`);
 
     return;
   }
@@ -463,8 +488,8 @@ function compileRawNode(ctx: CompilerContext, ast: ASTRawNode) {
     const id = uniqueId(ctx);
     addLine(ctx, `let ${id} = ${expr}`);
     addIf(ctx, `${id} !== undefined`);
-    const vnode = `...this.htmlToVDOM(${expr})`;
-    addVNode(ctx, vnode, false);
+    const vnode = `{type: ${NodeType.Multi}, children: this.htmlToVDOM(${expr})}`;
+    addVNode(ctx, vnode);
     ctx.indentLevel--;
     addLine(ctx, `} else {`);
     ctx.indentLevel++;
@@ -477,18 +502,15 @@ function compileRawNode(ctx: CompilerContext, ast: ASTRawNode) {
     const qwebVar = ctx.variables[ast.expr];
     if (qwebVar.hasBody && qwebVar.hasValue) {
       const vnode = `{type: ${NodeType.Multi}, children: this.htmlToVDOM(${qwebVar.expr})}`;
-      addVNode(ctx, vnode, false);
+      addVNode(ctx, vnode);
     } else {
       const vnode = `{type: ${NodeType.Multi}, children: ${qwebVar.expr}}`;
-      addVNode(ctx, vnode, false);
+      addVNode(ctx, vnode);
     }
   } else {
-    if (ctx.currentParent === "tree") {
-      addLine(ctx, `tree.child = {type: ${NodeType.Multi}, children: this.htmlToVDOM(${expr})};`);
-    } else {
-      const vnode = `...this.htmlToVDOM(${expr})`;
-      addVNode(ctx, vnode, false);
-    }
+    // if (ctx.currentParent === "tree") {
+    const vnode = `{type: ${NodeType.Multi}, children: this.htmlToVDOM(${expr})}`;
+    addVNode(ctx, vnode);
   }
 }
 
@@ -500,18 +522,17 @@ function compileCallNode(ctx: CompilerContext, ast: ASTCallNode) {
   if (ast.children.length) {
     addLine(ctx, `ctx = Object.create(ctx);`);
     const id = uniqueId(ctx, "vn");
-    addLine(
-      ctx,
-      `const ${id} = {type: ${NodeType.Multi}, children: [], staticNodes: tree.staticNodes};`
-    );
+    addLine(ctx, `let ${id} = {type: ${NodeType.Multi}, children: new this.VDomArray()};`);
+    // const id = addVNode(ctx, vnode);
+    // addLine(ctx, `const ${id} = new this.VDomArray();;`);
     withSubContext(ctx, { currentParent: id }, () => {
       generateCode(ast.children, ctx);
     });
     addLine(ctx, `ctx[this.zero] = ${id};`);
   }
-  const vnode = `this.callTemplate(tree, "${ast.template}", ctx, metadata)`;
+  const vnode = `this.callTemplate("${ast.template}", ctx, metadata)`;
 
-  addVNode(ctx, vnode, false);
+  addVNode(ctx, vnode);
   if (ast.children.length) {
     addLine(ctx, `ctx = ctx.__proto__;`);
   }
@@ -525,7 +546,7 @@ function compileStaticNode(ctx: CompilerContext, ast: ASTStaticNode) {
   const el = makeEl(ast.child) as HTMLElement;
   const id = registerStaticNode(ctx.templateName, el);
   const vnode = `{type: ${NodeType.Static}, id: ${id}, template: "${ctx.templateName}"}`;
-  addVNode(ctx, vnode, false);
+  addVNode(ctx, vnode);
 }
 
 function makeEl(ast: AST): HTMLElement | Text | Comment {

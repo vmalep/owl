@@ -3,21 +3,25 @@
 exports[`basic component properties mounting components can mount a simple functional component 1`] = `[Function]`;
 
 exports[`basic component properties mounting components ccomponent: can handle empty props 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__30\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _3 = {val:undefined};
-    vn2.children.push(this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3));
+    const vn5 = this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3);
+    vn2.children.push(vn5);
+    return vn2;
 }"
 `;
 
 exports[`basic component properties mounting components fcomponent: can handle empty props 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__32\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _3 = {val:undefined};
-    vn2.children.push(this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3));
+    const vn5 = this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3);
+    vn2.children.push(vn5);
+    return vn2;
 }"
 `;

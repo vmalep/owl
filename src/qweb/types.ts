@@ -1,17 +1,17 @@
 import { QWeb } from "./qweb";
-import { VRootNode } from "../vdom/types";
+import { VRootNode, VNode } from "../vdom/types";
 
 export interface RenderContext {
   [key: string]: any;
 }
 
 export interface TemplateInfo {
-  fn: (this: QWeb["utils"], root: VRootNode, context: RenderContext, extra: any) => void;
+  fn: (this: QWeb["utils"], context: RenderContext, extra: any) => VNode;
 }
 
 export interface QWebTemplate {
   createRoot(): VRootNode;
-  render(root: VRootNode, context: RenderContext, extra: any): void;
+  render(context: RenderContext, extra: any): VNode;
 }
 
 // -----------------------------------------------------------------------------

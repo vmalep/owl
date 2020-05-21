@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__30\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].s;
     let length3 = _4.length;
     ctx = Object.create(ctx);
@@ -24,19 +24,21 @@ exports[`component composition various update scenarios reconciliation alg works
             ctx.blip_index = i1;
             ctx.blip_value = _6[i1];
             let _7 = {blip:ctx['blip']};
-            vn2.children.push(this.makeComponent(\`k8__\${i0}__\${i1}\`, metadata, \\"Child\\", ctx, _7));
+            const vn9 = this.makeComponent(\`k8__\${i0}__\${i1}\`, metadata, \\"Child\\", ctx, _7);
+            vn2.children.push(vn9);
         }
         ctx = ctx.__proto__;
     }
     ctx = ctx.__proto__;
+    return vn2;
 }"
 `;
 
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach, 2 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__32\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].rows;
     let length3 = _4.length;
     ctx = Object.create(ctx);
@@ -62,43 +64,51 @@ exports[`component composition various update scenarios reconciliation alg works
             const vn12 = {type: 2, tag: \\"p\\", children: [], key: \`k11__\${key10}\`};
             vn7.children.push(vn12);
             let _13 = {row:ctx['row'],col:ctx['col']};
-            vn12.children.push(this.makeComponent(\`k14__\${key5}__\${key10}\`, metadata, \\"Child\\", ctx, _13));
+            const vn15 = this.makeComponent(\`k14__\${key5}__\${key10}\`, metadata, \\"Child\\", ctx, _13);
+            vn12.children.push(vn15);
         }
         ctx = ctx.__proto__;
     }
     ctx = ctx.__proto__;
+    return vn2;
 }"
 `;
 
 exports[`component composition various update scenarios same t-keys in two different places 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__34\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     const vn4 = {type: 2, tag: \\"div\\", children: [], key: \`k3\`};
     vn2.children.push(vn4);
     let key5 = 1;
     let _6 = {blip:'1'};
-    vn4.children.push(this.makeComponent(\`k7__\${key5}\`, metadata, \\"Child\\", ctx, _6));
+    const vn8 = this.makeComponent(\`k7__\${key5}\`, metadata, \\"Child\\", ctx, _6);
+    vn4.children.push(vn8);
     const vn10 = {type: 2, tag: \\"div\\", children: [], key: \`k9\`};
     vn2.children.push(vn10);
     let key11 = 1;
     let _12 = {blip:'2'};
-    vn10.children.push(this.makeComponent(\`k13__\${key11}\`, metadata, \\"Child\\", ctx, _12));
+    const vn14 = this.makeComponent(\`k13__\${key11}\`, metadata, \\"Child\\", ctx, _12);
+    vn10.children.push(vn14);
+    return vn2;
 }"
 `;
 
 exports[`component composition various update scenarios t-key on a component with t-if, and a sibling component 1`] = `
-"function anonymous(tree, ctx, metadata
+"function anonymous(ctx, metadata
 ) {
     // Template: \`__template__36\`
-    const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (false) {
         let key3 = 'str';
         let _4 = {};
-        vn2.children.push(this.makeComponent(\`k5__\${key3}\`, metadata, \\"Child\\", ctx, _4));
+        const vn6 = this.makeComponent(\`k5__\${key3}\`, metadata, \\"Child\\", ctx, _4);
+        vn2.children.push(vn6);
     }
     let _7 = {};
-    vn2.children.push(this.makeComponent(\`k8\`, metadata, \\"Child\\", ctx, _7));
+    const vn9 = this.makeComponent(\`k8\`, metadata, \\"Child\\", ctx, _7);
+    vn2.children.push(vn9);
+    return vn2;
 }"
 `;

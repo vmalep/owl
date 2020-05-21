@@ -33,7 +33,7 @@ function addNode(node: Node, anchor: HTMLElement, position: NodePosition) {
 
 function vDomToString(vdomArray: VNode[]): string {
   const div = document.createElement("div");
-  buildTree({ type: NodeType.Multi, children: vdomArray }, div);
+  buildTree({ type: NodeType.Multi, children: vdomArray }, div, NodePosition.Append);
   return div.innerHTML;
 }
 
@@ -45,7 +45,10 @@ function anyToString(content: any): string {
       if (content === null) {
         return "";
       } else if (content instanceof VDomArray) {
+        // useless if branch???
         return vDomToString(content);
+      } else if (content.children instanceof VDomArray) {
+        return vDomToString(content.children);
       }
   }
   return content;

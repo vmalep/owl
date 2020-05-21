@@ -1,9 +1,9 @@
-import { compileTemplate, handle } from "./compiler";
-import { buildTree, VDomArray } from "../vdom/vdom";
-import { NodeType, VMultiNode, VRootNode } from "../vdom/types";
-import { htmlToVDOM } from "../vdom/html_to_vdom";
 import { escape } from "../utils";
-import { TemplateInfo, RenderContext, QWebTemplate } from "./types";
+import { htmlToVDOM } from "../vdom/html_to_vdom";
+import { NodeType, VMultiNode } from "../vdom/types";
+import { buildTree, VDomArray } from "../vdom/vdom";
+import { compileTemplate, handle } from "./compiler";
+import { QWebTemplate, RenderContext, TemplateInfo } from "./types";
 
 // -----------------------------------------------------------------------------
 // QWeb Context
@@ -22,10 +22,10 @@ const qwebContext: any = {
     buildTree(multi, div);
     return div.innerHTML;
   },
-  callTemplate(tree: VRootNode, name: string, ctx: RenderContext, metadata?: any) {
+  callTemplate(name: string, ctx: RenderContext, metadata?: any) {
     const template = qweb.getTemplate(name);
     const subtree = template.createRoot();
-    template.render(subtree, ctx, metadata);
+    subtree.child = template.render(ctx, metadata);
     return subtree;
   },
   htmlToVDOM,
@@ -104,7 +104,7 @@ export const qweb = {
   renderToString(name: string, context: RenderContext = {}): string {
     const template = qweb.getTemplate(name);
     const tree = template.createRoot();
-    template.render(tree, context, null);
+    tree.child = template.render(context, null);
     const div = document.createElement("div");
     buildTree(tree, div);
     escapeTextNodes(div);
