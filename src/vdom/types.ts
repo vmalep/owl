@@ -47,7 +47,6 @@ export interface VRootNode extends BaseNode {
   type: NodeType.Root;
   child: VNode | null;
   hooks: Hooks;
-  staticNodes: HTMLElement[];
   anchor: HTMLElement | DocumentFragment | null;
   position: NodePosition | null;
 }
@@ -66,6 +65,7 @@ export interface VDOMNode extends BaseNode {
 export interface VStaticNode extends BaseNode {
   type: NodeType.Static;
   id: number;
+  template: string;
   el?: HTMLElement;
 }
 
@@ -86,7 +86,6 @@ export interface VCommentNode extends BaseNode {
 export interface VMultiNode extends BaseNode {
   type: NodeType.Multi;
   children: VNode[];
-  staticNodes?: HTMLElement[]; // sometimes useful to propagate nodes from a body to a t-call
 }
 
 export type VNode = VDOMNode | VTextNode | VCommentNode | VStaticNode | VRootNode | VMultiNode;

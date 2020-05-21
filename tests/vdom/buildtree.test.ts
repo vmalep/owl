@@ -95,9 +95,8 @@ describe("patch function", () => {
   });
 
   test("static node", () => {
-    const root = vRoot(null);
-    root.child = vStatic(root, "<div>hey</div>");
-    buildTree(root, fixture);
+    const vnode = vStatic("sometemplate", "<div>hey</div>");
+    buildTree(vnode, fixture);
     expect(fixture.innerHTML).toBe("<div>hey</div>");
   });
 

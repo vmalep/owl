@@ -7,7 +7,6 @@ export interface RenderContext {
 
 export interface TemplateInfo {
   fn: (this: QWeb["utils"], root: VRootNode, context: RenderContext, extra: any) => void;
-  staticNodes: HTMLElement[];
 }
 
 export interface QWebTemplate {

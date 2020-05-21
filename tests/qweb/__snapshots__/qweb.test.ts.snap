@@ -86,7 +86,7 @@ exports[`attributes static attributes 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 19, template: \\"__template__1\\"};
 }"
 `;
 
@@ -94,7 +94,7 @@ exports[`attributes static attributes on void elements 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 21, template: \\"__template__1\\"};
 }"
 `;
 
@@ -102,7 +102,7 @@ exports[`attributes static attributes with dashes 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 20, template: \\"__template__1\\"};
 }"
 `;
 
@@ -122,7 +122,7 @@ exports[`debugging t-debug 1`] = `
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (true) {
         debugger;
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 31, template: \\"__template__1\\"});
     }
 }"
 `;
@@ -396,7 +396,7 @@ exports[`special cases for some boolean html attributes/properties various boole
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 27, template: \\"__template__1\\"};
 }"
 `;
 
@@ -404,7 +404,7 @@ exports[`static templates div with a class attribute 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 4, template: \\"__template__1\\"};
 }"
 `;
 
@@ -412,7 +412,7 @@ exports[`static templates div with a class attribute with a quote 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 5, template: \\"__template__1\\"};
 }"
 `;
 
@@ -420,7 +420,7 @@ exports[`static templates div with a empty class attribute 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 7, template: \\"__template__1\\"};
 }"
 `;
 
@@ -428,7 +428,7 @@ exports[`static templates div with a span child node 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 8, template: \\"__template__1\\"};
 }"
 `;
 
@@ -436,7 +436,7 @@ exports[`static templates div with a text node 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 3, template: \\"__template__1\\"};
 }"
 `;
 
@@ -444,7 +444,7 @@ exports[`static templates div with an arbitrary attribute with a quote 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 6, template: \\"__template__1\\"};
 }"
 `;
 
@@ -452,7 +452,7 @@ exports[`static templates empty div 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 0, template: \\"__template__1\\"};
 }"
 `;
 
@@ -468,7 +468,7 @@ exports[`static templates properly handle comments 1`] = `
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 9, template: \\"__template__1\\"};
 }"
 `;
 
@@ -478,7 +478,7 @@ exports[`static templates properly handle comments between t-if/t-else 1`] = `
     // Template: \`__template__1\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (true) {
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 10, template: \\"__template__1\\"});
     } else {
         const vn5 = {type: 2, tag: \\"span\\", children: [], key: \`k4\`};
         vn2.children.push(vn5);
@@ -526,8 +526,8 @@ exports[`static templates two empty divs (*) 1`] = `
 ) {
     // Template: \`__template__1\`
     const vn1 = tree.child = {type: 1, children:[]};
-    vn1.children.push({type: 5, id: 0});
-    vn1.children.push({type: 5, id: 1});
+    vn1.children.push({type: 5, id: 1, template: \\"__template__1\\"});
+    vn1.children.push({type: 5, id: 2, template: \\"__template__1\\"});
 }"
 `;
 
@@ -555,9 +555,9 @@ exports[`t-call (template calling call with several sub nodes on same line 1`] =
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     ctx = Object.create(ctx);
     const vn3 = {type: 1, children: [], staticNodes: tree.staticNodes};
-    vn3.children.push({type: 5, id: 0});
+    vn3.children.push({type: 5, id: 1, template: \\"__template__2\\"});
     vn3.children.push({type: 3, text: \` \`, el: null});
-    vn3.children.push({type: 5, id: 1});
+    vn3.children.push({type: 5, id: 2, template: \\"__template__2\\"});
     ctx[this.zero] = vn3;
     vn2.children.push(this.callTemplate(tree, \\"__template__1\\", ctx, metadata));
     ctx = ctx.__proto__;
@@ -571,9 +571,9 @@ exports[`t-call (template calling cascading t-call t-raw='0' 1`] = `
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     ctx = Object.create(ctx);
     const vn3 = {type: 1, children: [], staticNodes: tree.staticNodes};
-    vn3.children.push({type: 5, id: 0});
+    vn3.children.push({type: 5, id: 0, template: \\"__template__4\\"});
     vn3.children.push({type: 3, text: \` \`, el: null});
-    vn3.children.push({type: 5, id: 1});
+    vn3.children.push({type: 5, id: 1, template: \\"__template__4\\"});
     ctx[this.zero] = vn3;
     vn2.children.push(this.callTemplate(tree, \\"__template__3\\", ctx, metadata));
     ctx = ctx.__proto__;
@@ -924,7 +924,7 @@ exports[`t-esc t-esc=0 is escaped 1`] = `
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     ctx = Object.create(ctx);
     const vn3 = {type: 1, children: [], staticNodes: tree.staticNodes};
-    vn3.children.push({type: 5, id: 0});
+    vn3.children.push({type: 5, id: 0, template: \\"__template__2\\"});
     ctx[this.zero] = vn3;
     vn2.children.push(this.callTemplate(tree, \\"__template__1\\", ctx, metadata));
     ctx = ctx.__proto__;
@@ -970,7 +970,7 @@ exports[`t-if boolean value condition else 1`] = `
     } else {
         vn2.children.push({type: 3, text: \`ok-else\`, el: null});
     }
-    vn2.children.push({type: 5, id: 0});
+    vn2.children.push({type: 5, id: 14, template: \\"__template__1\\"});
 }"
 `;
 
@@ -987,7 +987,7 @@ exports[`t-if boolean value condition false else 1`] = `
     } else {
         vn2.children.push({type: 3, text: \`fail-else\`, el: null});
     }
-    vn2.children.push({type: 5, id: 0});
+    vn2.children.push({type: 5, id: 15, template: \\"__template__1\\"});
 }"
 `;
 
@@ -1008,7 +1008,7 @@ exports[`t-if boolean value false condition (on a dom node) (*) 1`] = `
     // Template: \`__template__1\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (ctx['condition']) {
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 12, template: \\"__template__1\\"});
     }
 }"
 `;
@@ -1029,7 +1029,7 @@ exports[`t-if boolean value false condition, resulting in empty template (on a d
 ) {
     // Template: \`__template__1\`
     if (ctx['condition']) {
-        tree.child = {type: 5, id: 0};
+        tree.child = {type: 5, id: 13, template: \\"__template__1\\"};
     }
 }"
 `;
@@ -1040,7 +1040,7 @@ exports[`t-if boolean value true condition (on a dom node) (*) 1`] = `
     // Template: \`__template__1\`
     const vn2 = tree.child = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (ctx['condition']) {
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 11, template: \\"__template__1\\"});
     }
 }"
 `;
@@ -1121,9 +1121,9 @@ exports[`t-if t-set, then t-elif, part 3 1`] = `
     ctx.y = false;
     ctx.x = ctx['y'];
     if (ctx['x']) {
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 17, template: \\"__template__1\\"});
     } else if (!ctx['x']) {
-        vn2.children.push({type: 5, id: 1});
+        vn2.children.push({type: 5, id: 18, template: \\"__template__1\\"});
     }
 }"
 `;
@@ -1150,7 +1150,7 @@ exports[`t-if t-set, then t-if, part 2 1`] = `
     ctx.y = true;
     ctx.x = ctx['y'];
     if (ctx['x']) {
-        vn2.children.push({type: 5, id: 0});
+        vn2.children.push({type: 5, id: 16, template: \\"__template__1\\"});
     }
 }"
 `;
@@ -1818,7 +1818,7 @@ exports[`whitespace handling consecutives whitespaces are condensed into a singl
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 29, template: \\"__template__1\\"};
 }"
 `;
 
@@ -1826,7 +1826,7 @@ exports[`whitespace handling white space only text nodes are condensed into a si
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 28, template: \\"__template__1\\"};
 }"
 `;
 
@@ -1834,6 +1834,6 @@ exports[`whitespace handling whitespace only text nodes with newlines are remove
 "function anonymous(tree, ctx, metadata
 ) {
     // Template: \`__template__1\`
-    tree.child = {type: 5, id: 0};
+    tree.child = {type: 5, id: 30, template: \\"__template__1\\"};
 }"
 `;

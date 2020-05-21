@@ -9,6 +9,12 @@ import {
   VTextNode,
 } from "./types";
 
+const staticNodes: { [template: string]: HTMLElement[] } = {};
+
+export function registerStaticNode(template: string, elem: HTMLElement): number {
+  staticNodes[template] = staticNodes[template] || [];
+  return staticNodes[template].push(elem) - 1;
+}
 // -----------------------------------------------------------------------------
 // patch and update
 // -----------------------------------------------------------------------------
@@ -48,8 +54,7 @@ function anyToString(content: any): string {
 export function buildTree(
   vnode: VNode,
   anchor: HTMLElement,
-  position: NodePosition = NodePosition.Append,
-  staticNodes: HTMLElement[] = []
+  position: NodePosition = NodePosition.Append
 ) {
   switch (vnode.type) {
     case NodeType.Text:
@@ -67,7 +72,7 @@ export function buildTree(
       const el = document.createElement(vnode.tag);
       vnode.el = el;
       for (let child of vnode.children) {
-        buildTree(child, el, NodePosition.Append, staticNodes);
+        buildTree(child, el, NodePosition.Append);
       }
       const { attrs, class: classList, on } = vnode;
       for (let name in attrs) {
@@ -100,7 +105,7 @@ export function buildTree(
       vnode.anchor = anchor;
       vnode.position = position;
       if (child) {
-        buildTree(child, anchor, position, vnode.staticNodes);
+        buildTree(child, anchor, position);
         const createHook = vnode.hooks.create;
         if (createHook) {
           const el = getEl(child);
@@ -112,14 +117,13 @@ export function buildTree(
       break;
     }
     case NodeType.Multi: {
-      let multiStaticNodes = vnode.staticNodes || staticNodes;
       for (let child of vnode.children) {
-        buildTree(child, anchor, position, multiStaticNodes);
+        buildTree(child, anchor, position);
       }
       break;
     }
     case NodeType.Static: {
-      const staticEl = staticNodes![vnode.id].cloneNode(true) as HTMLElement;
+      const staticEl = staticNodes[vnode.template][vnode.id].cloneNode(true) as HTMLElement;
       vnode.el = staticEl;
       addNode(staticEl, anchor, position);
       break;
@@ -153,14 +157,14 @@ function getEl(vnode: VNode): HTMLElement | Text | Comment | null {
  * Note that it assumes that vnode and target are the same (same key/type/...)
  * It mutates vnode in place
  */
-export function patch(vnode: VNode, target: VNode, staticNodes: HTMLElement[] = []) {
+export function patch(vnode: VNode, target: VNode) {
   switch (vnode.type) {
     case NodeType.Text:
       vnode.el!.textContent = anyToString((target as VTextNode).text);
       (target as VTextNode).el = vnode.el;
       break;
     case NodeType.DOM:
-      updateChildren(vnode, target as VDOMNode, staticNodes);
+      updateChildren(vnode, target as VDOMNode);
       vnode.children = (target as VDOMNode).children;
       vnode.on = (target as VDOMNode).on;
       (target as VDOMNode).el = vnode.el;
@@ -176,20 +180,19 @@ export function patch(vnode: VNode, target: VNode, staticNodes: HTMLElement[] = 
         return;
       }
       if (isSame(vnode.child!, (target as VRootNode).child!)) {
-        patch(vnode.child!, (target as VRootNode).child!, staticNodes);
+        patch(vnode.child!, (target as VRootNode).child!);
       } else {
         removeTree(vnode.child!);
         vnode.child = (target as VRootNode).child;
         buildTree(
           (target as VRootNode).child!,
           (vnode.anchor as any) as HTMLElement,
-          vnode.position!,
-          staticNodes
+          vnode.position!
         );
       }
       break;
     case NodeType.Multi:
-      updateChildren(vnode, target as VMultiNode, staticNodes);
+      updateChildren(vnode, target as VMultiNode);
       break;
   }
 }
@@ -219,11 +222,7 @@ function isSame(vn1: VNode, vn2: VNode): boolean {
   return vn1.type === vn2.type && vn1.key === vn2.key;
 }
 
-function updateChildren(
-  vnode: VDOMNode | VMultiNode,
-  newParent: VDOMNode | VMultiNode,
-  staticNodes: HTMLElement[]
-) {
+function updateChildren(vnode: VDOMNode | VMultiNode, newParent: VDOMNode | VMultiNode) {
   const oldChildren = vnode.children;
   const newChildren = newParent.children;
   let oldStartIdx = 0;
@@ -248,7 +247,7 @@ function updateChildren(
     } else if (newEndVnode === undefined) {
       newEndVnode = newChildren[--newEndIdx];
     } else if (isSame(oldStartVnode, newStartVnode)) {
-      patch(oldStartVnode, newStartVnode, staticNodes);
+      patch(oldStartVnode, newStartVnode);
       oldStartVnode = oldChildren[++oldStartIdx];
       newStartVnode = newChildren[++newStartIdx];
     } else if (isSame(oldEndVnode, newEndVnode)) {
@@ -286,7 +285,7 @@ function updateChildren(
       idxInOld = oldKeyToIdx[newStartVnode.key as any];
       if (idxInOld === undefined) {
         // new element
-        buildTree(newStartVnode, getEl(oldStartVnode) as any, NodePosition.Before, staticNodes);
+        buildTree(newStartVnode, getEl(oldStartVnode) as any, NodePosition.Before);
         newStartVnode = newChildren[++newStartIdx];
       } else {
         const vnToMove = oldChildren[idxInOld];
@@ -317,7 +316,7 @@ function updateChildren(
         anchor = (vnode as any).el;
       }
       for (; newStartIdx <= newEndIdx; ++newStartIdx) {
-        buildTree(newChildren[newStartIdx], anchor, position, staticNodes);
+        buildTree(newChildren[newStartIdx], anchor, position);
       }
     } else {
       for (let i = oldStartIdx; i <= oldEndIdx; i++) {

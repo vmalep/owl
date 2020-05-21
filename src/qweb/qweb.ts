@@ -86,7 +86,6 @@ export const qweb = {
           child: null,
           key: -1,
           hooks: {},
-          staticNodes: templateInfo.staticNodes,
           anchor: null,
           position: null,
         };

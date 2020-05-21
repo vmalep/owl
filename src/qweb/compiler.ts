@@ -13,6 +13,7 @@ import {
 import { parse } from "./parser";
 import { QWeb } from "./qweb";
 import { OwlElement } from "../components/core";
+import { registerStaticNode } from "../vdom/vdom";
 
 interface QWebVar {
   expr: string;
@@ -33,6 +34,7 @@ interface CompilerContext {
   isDebug: boolean | "ast";
   loopIndex: number;
   path: string[];
+  templateName: string;
 }
 
 export function compileTemplate(qweb: QWeb, name: string, template: string): TemplateInfo {
@@ -50,6 +52,7 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
     isDebug: false,
     loopIndex: 0,
     path: [],
+    templateName: name,
   };
   const descr = name.trim().slice(0, 100).replace(/`/g, "'").replace(/\n/g, "");
   addLine(ctx, `// Template: \`${descr}\``);
@@ -73,7 +76,6 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
   }
   return {
     fn,
-    staticNodes: ctx.staticNodes,
   };
 }
 
@@ -521,8 +523,8 @@ function compileCallNode(ctx: CompilerContext, ast: ASTCallNode) {
 
 function compileStaticNode(ctx: CompilerContext, ast: ASTStaticNode) {
   const el = makeEl(ast.child) as HTMLElement;
-  const id = ctx.staticNodes.push(el) - 1;
-  const vnode = `{type: ${NodeType.Static}, id: ${id}}`;
+  const id = registerStaticNode(ctx.templateName, el);
+  const vnode = `{type: ${NodeType.Static}, id: ${id}, template: "${ctx.templateName}"}`;
   addVNode(ctx, vnode, false);
 }
 
