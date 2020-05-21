@@ -6,11 +6,10 @@ exports[`basic component properties mounting components ccomponent: can handle e
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__30\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
-    let _3 = {val:undefined};
-    const vn5 = this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3);
-    vn2.children.push(vn5);
-    return vn2;
+    let _1 = {val:undefined};
+    let vn3 = this.makeComponent(\`k2\`, metadata, \\"Child\\", ctx, _1);
+    let vn5 = {type: 2, tag: \\"div\\", children: [vn3], key: \`k4\`};
+    return vn5;
 }"
 `;
 
@@ -18,10 +17,9 @@ exports[`basic component properties mounting components fcomponent: can handle e
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__32\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
-    let _3 = {val:undefined};
-    const vn5 = this.makeComponent(\`k4\`, metadata, \\"Child\\", ctx, _3);
-    vn2.children.push(vn5);
-    return vn2;
+    let _1 = {val:undefined};
+    let vn3 = this.makeComponent(\`k2\`, metadata, \\"Child\\", ctx, _1);
+    let vn5 = {type: 2, tag: \\"div\\", children: [vn3], key: \`k4\`};
+    return vn5;
 }"
 `;

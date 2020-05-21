@@ -1,10 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`component composition various update scenarios reconciliation alg is not confused in some specific situation 1`] = `
+"function anonymous(ctx, metadata
+) {
+    // Template: \`__template__28\`
+    let _1 = {};
+    let vn3 = this.makeComponent(\`k2\`, metadata, \\"Child\\", ctx, _1);
+    let key4 = 4;
+    let _5 = {};
+    let vn7 = this.makeComponent(\`k6__\${key4}\`, metadata, \\"Child\\", ctx, _5);
+    let vn9 = {type: 2, tag: \\"div\\", children: [vn3,vn7], key: \`k8\`};
+    return vn9;
+}"
+`;
+
 exports[`component composition various update scenarios reconciliation alg works for t-foreach in t-foreach 1`] = `
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__30\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].s;
     let length3 = _4.length;
     ctx = Object.create(ctx);
@@ -24,7 +38,7 @@ exports[`component composition various update scenarios reconciliation alg works
             ctx.blip_index = i1;
             ctx.blip_value = _6[i1];
             let _7 = {blip:ctx['blip']};
-            const vn9 = this.makeComponent(\`k8__\${i0}__\${i1}\`, metadata, \\"Child\\", ctx, _7);
+            let vn9 = this.makeComponent(\`k8__\${i0}__\${i1}\`, metadata, \\"Child\\", ctx, _7);
             vn2.children.push(vn9);
         }
         ctx = ctx.__proto__;
@@ -38,7 +52,7 @@ exports[`component composition various update scenarios reconciliation alg works
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__32\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     let _4 = ctx['state'].rows;
     let length3 = _4.length;
     ctx = Object.create(ctx);
@@ -49,7 +63,7 @@ exports[`component composition various update scenarios reconciliation alg works
         ctx.row_index = i0;
         ctx.row_value = _4[i0];
         let key5 = ctx['row'];
-        const vn7 = {type: 2, tag: \\"p\\", children: [], key: \`k6__\${key5}\`};
+        let vn7 = {type: 2, tag: \\"p\\", children: [], key: \`k6__\${key5}\`};
         vn2.children.push(vn7);
         let _9 = ctx['state'].cols;
         let length8 = _9.length;
@@ -61,11 +75,10 @@ exports[`component composition various update scenarios reconciliation alg works
             ctx.col_index = i1;
             ctx.col_value = _9[i1];
             let key10 = ctx['col'];
-            const vn12 = {type: 2, tag: \\"p\\", children: [], key: \`k11__\${key10}\`};
-            vn7.children.push(vn12);
-            let _13 = {row:ctx['row'],col:ctx['col']};
-            const vn15 = this.makeComponent(\`k14__\${key5}__\${key10}\`, metadata, \\"Child\\", ctx, _13);
-            vn12.children.push(vn15);
+            let _11 = {row:ctx['row'],col:ctx['col']};
+            let vn13 = this.makeComponent(\`k12__\${key5}__\${key10}\`, metadata, \\"Child\\", ctx, _11);
+            let vn15 = {type: 2, tag: \\"p\\", children: [vn13], key: \`k14__\${key10}\`};
+            vn7.children.push(vn15);
         }
         ctx = ctx.__proto__;
     }
@@ -78,20 +91,16 @@ exports[`component composition various update scenarios same t-keys in two diffe
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__34\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
-    const vn4 = {type: 2, tag: \\"div\\", children: [], key: \`k3\`};
-    vn2.children.push(vn4);
-    let key5 = 1;
-    let _6 = {blip:'1'};
-    const vn8 = this.makeComponent(\`k7__\${key5}\`, metadata, \\"Child\\", ctx, _6);
-    vn4.children.push(vn8);
-    const vn10 = {type: 2, tag: \\"div\\", children: [], key: \`k9\`};
-    vn2.children.push(vn10);
-    let key11 = 1;
-    let _12 = {blip:'2'};
-    const vn14 = this.makeComponent(\`k13__\${key11}\`, metadata, \\"Child\\", ctx, _12);
-    vn10.children.push(vn14);
-    return vn2;
+    let key1 = 1;
+    let _2 = {blip:'1'};
+    let vn4 = this.makeComponent(\`k3__\${key1}\`, metadata, \\"Child\\", ctx, _2);
+    let vn6 = {type: 2, tag: \\"div\\", children: [vn4], key: \`k5\`};
+    let key7 = 1;
+    let _8 = {blip:'2'};
+    let vn10 = this.makeComponent(\`k9__\${key7}\`, metadata, \\"Child\\", ctx, _8);
+    let vn12 = {type: 2, tag: \\"div\\", children: [vn10], key: \`k11\`};
+    let vn14 = {type: 2, tag: \\"div\\", children: [vn6,vn12], key: \`k13\`};
+    return vn14;
 }"
 `;
 
@@ -99,15 +108,15 @@ exports[`component composition various update scenarios t-key on a component wit
 "function anonymous(ctx, metadata
 ) {
     // Template: \`__template__36\`
-    const vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
+    let vn2 = {type: 2, tag: \\"div\\", children: [], key: \`k1\`};
     if (false) {
         let key3 = 'str';
         let _4 = {};
-        const vn6 = this.makeComponent(\`k5__\${key3}\`, metadata, \\"Child\\", ctx, _4);
+        let vn6 = this.makeComponent(\`k5__\${key3}\`, metadata, \\"Child\\", ctx, _4);
         vn2.children.push(vn6);
     }
     let _7 = {};
-    const vn9 = this.makeComponent(\`k8\`, metadata, \\"Child\\", ctx, _7);
+    let vn9 = this.makeComponent(\`k8\`, metadata, \\"Child\\", ctx, _7);
     vn2.children.push(vn9);
     return vn2;
 }"

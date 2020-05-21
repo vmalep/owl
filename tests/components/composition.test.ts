@@ -262,6 +262,7 @@ describe("component composition", () => {
 
       await mount(Parent, fixture);
       expect(fixture.innerHTML).toBe("<div><span>child</span><span>child</span></div>");
+      expect(qweb.compiledTemplates[Parent.template].fn.toString()).toMatchSnapshot();
     });
 
     test("reconciliation alg works for t-foreach in t-foreach", async () => {

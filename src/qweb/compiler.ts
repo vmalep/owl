@@ -28,7 +28,6 @@ interface CompilerContext {
   nextId: number;
   indentLevel: number;
   shouldProtectContext: boolean;
-  shouldDefineRootContext: boolean;
   variables: { [name: string]: QWebVar };
   staticNodes: HTMLElement[];
   isDebug: boolean | "ast";
@@ -65,7 +64,6 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
     nextId: 1,
     indentLevel: 0,
     shouldProtectContext: false,
-    shouldDefineRootContext: false,
     variables: {},
     staticNodes: [],
     isDebug: false,
@@ -86,15 +84,15 @@ export function compileTemplate(qweb: QWeb, name: string, template: string): Tem
   if (ctx.shouldProtectContext) {
     ctx.code.splice(1, 0, `    ctx = Object.create(ctx);`);
   }
-  if (ctx.shouldDefineRootContext) {
-    ctx.code.splice(1, 0, `    const rootCtx = ctx;`);
-  }
   if (isMulti) {
     addLine(ctx, `return vn0;`);
-  } else if (ctx.roots.length > 1) {
-    addLine(ctx, `return {type: ${NodeType.Multi}, children: ${ctx.roots}};`);
   } else {
-    addLine(ctx, `return ${ctx.roots[0]};`);
+    const lastLine = ctx.code[ctx.code.length - 1];
+    if (lastLine.trimLeft().startsWith(`let ${ctx.roots[0]} =`)) {
+      ctx.code.splice(-1, 1, lastLine.replace(`let ${ctx.roots[0]} =`, "return"));
+    } else {
+      addLine(ctx, `return ${ctx.roots[0]};`);
+    }
   }
   // console.warn(ctx.code.join("\n"));
   const fn = new Function("ctx, metadata", ctx.code.join("\n")) as any;
@@ -188,11 +186,20 @@ function generateCode(ast: AST | AST[], ctx: CompilerContext) {
       break;
     }
     case "MULTI": {
-      const vnode = `{type: ${NodeType.Multi}, children:[]}`;
-      const id = addVNode(ctx, vnode);
-      withSubContext(ctx, { currentParent: id }, () => {
-        generateCode(ast.children, ctx);
-      });
+      if (isStructurallyStatic(ast)) {
+        const roots: string[] = [];
+        withSubContext(ctx, { currentParent: null, roots }, () => {
+          generateCode(ast.children, ctx);
+        });
+        const vnode = `{type: ${NodeType.Multi}, children: [${roots.join(",")}]}`;
+        addVNode(ctx, vnode);
+      } else {
+        const vnode = `{type: ${NodeType.Multi}, children: []}`;
+        const id = addVNode(ctx, vnode);
+        withSubContext(ctx, { currentParent: id }, () => {
+          generateCode(ast.children, ctx);
+        });
+      }
       break;
     }
     case "T-CALL":
@@ -265,7 +272,7 @@ function uniqueId(ctx: CompilerContext, prefix: string = "_"): string {
 
 function addVNode(ctx: CompilerContext, str: string): string {
   const id = uniqueId(ctx, "vn");
-  addLine(ctx, `const ${id} = ${str};`);
+  addLine(ctx, `let ${id} = ${str};`);
   if (ctx.currentParent) {
     if (ctx.currentParent.startsWith("_")) {
       addLine(ctx, `${ctx.currentParent}.push(${id});`);
@@ -354,6 +361,39 @@ function makeEventHandler(ctx: CompilerContext, eventName: string, expr: string)
   }
 }
 
+function isStructurallyStatic(ast: AST): boolean {
+  switch (ast.type) {
+    case "DOM":
+    case "MULTI":
+    case "T-CALL":
+      for (let child of ast.children) {
+        if (!isStructurallyStatic(child)) {
+          return false;
+        }
+      }
+      return true;
+    case "T-SET":
+      for (let child of ast.body) {
+        if (!isStructurallyStatic(child)) {
+          return false;
+        }
+      }
+      return true;
+    case "T-KEY":
+      return isStructurallyStatic(ast.child);
+    case "TEXT":
+    case "STATIC":
+    case "COMPONENT":
+      return true;
+    // case "T-CALL":
+    //   return ast.children.length === 0;
+    case "T-ESC":
+    case "T-RAW":
+      return ast.body.length === 0;
+  }
+  return false;
+}
+
 function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   // attributes
   const attrs = {};
@@ -379,7 +419,6 @@ function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   let handlers = "";
   if (Object.keys(ast.on).length) {
     let h: string[] = [];
-    ctx.shouldDefineRootContext = true;
     for (let ev in ast.on) {
       h.push(`${ev}: ${makeEventHandler(ctx, ev, ast.on[ev].expr)}`);
     }
@@ -387,12 +426,24 @@ function compileDOMNode(ctx: CompilerContext, ast: ASTDOMNode) {
   }
 
   // final code
-  const key = generateKey(ctx);
-  const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${key}${handlers}${classObj}}`;
-  const id = addVNode(ctx, vnode);
-  withSubContext(ctx, { currentParent: id }, () => {
-    generateCode(ast.children, ctx);
-  });
+  if (isStructurallyStatic(ast)) {
+    // we can generate children first
+    const roots: string[] = [];
+    withSubContext(ctx, { currentParent: null, roots }, () => {
+      generateCode(ast.children, ctx);
+    });
+    const key = generateKey(ctx);
+    const children = roots.join(",");
+    const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: [${children}]${attrCode}, key: ${key}${handlers}${classObj}}`;
+    addVNode(ctx, vnode);
+  } else {
+    const key = generateKey(ctx);
+    const vnode = `{type: ${NodeType.DOM}, tag: "${ast.tag}", children: []${attrCode}, key: ${key}${handlers}${classObj}}`;
+    const id = addVNode(ctx, vnode);
+    withSubContext(ctx, { currentParent: id }, () => {
+      generateCode(ast.children, ctx);
+    });
+  }
 }
 
 function generateKey(ctx: CompilerContext, full: boolean = false): string {
@@ -410,12 +461,20 @@ function compileSetNode(ctx: CompilerContext, ast: ASTSetNode) {
     addLine(ctx, `ctx.${ast.name} = ${compileExpr(ast.value)};`);
   }
   if (ast.body.length && ast.value === null) {
-    let id = uniqueId(ctx);
-    addLine(ctx, `let ${id} = new this.VDomArray();`);
-    withSubContext(ctx, { currentParent: id }, () => {
-      generateCode(ast.body, ctx);
-    });
-    addLine(ctx, `ctx.${ast.name} = ${id};`);
+    if (isStructurallyStatic(ast)) {
+      const roots: string[] = [];
+      withSubContext(ctx, { currentParent: null, roots }, () => {
+        generateCode(ast.body, ctx);
+      });
+      addLine(ctx, `ctx.${ast.name} = new this.VDomArray(${roots.join(",")});`);
+    } else {
+      let id = uniqueId(ctx);
+      addLine(ctx, `let ${id} = new this.VDomArray();`);
+      withSubContext(ctx, { currentParent: id }, () => {
+        generateCode(ast.body, ctx);
+      });
+      addLine(ctx, `ctx.${ast.name} = ${id};`);
+    }
   }
   if (ast.body.length && ast.value !== null) {
     addIf(ctx, `!ctx.${ast.name}`);
@@ -521,14 +580,25 @@ function compileRawNode(ctx: CompilerContext, ast: ASTRawNode) {
 function compileCallNode(ctx: CompilerContext, ast: ASTCallNode) {
   if (ast.children.length) {
     addLine(ctx, `ctx = Object.create(ctx);`);
-    const id = uniqueId(ctx, "vn");
-    addLine(ctx, `let ${id} = {type: ${NodeType.Multi}, children: new this.VDomArray()};`);
-    // const id = addVNode(ctx, vnode);
-    // addLine(ctx, `const ${id} = new this.VDomArray();;`);
-    withSubContext(ctx, { currentParent: id }, () => {
-      generateCode(ast.children, ctx);
-    });
-    addLine(ctx, `ctx[this.zero] = ${id};`);
+    if (isStructurallyStatic(ast)) {
+      const roots: string[] = [];
+      withSubContext(ctx, { currentParent: null, roots }, () => {
+        generateCode(ast.children, ctx);
+      });
+      addLine(
+        ctx,
+        `ctx[this.zero] = {type: ${NodeType.Multi}, children: new this.VDomArray(${roots.join(
+          ","
+        )})};`
+      );
+    } else {
+      const id = uniqueId(ctx, "vn");
+      addLine(ctx, `let ${id} = {type: ${NodeType.Multi}, children: new this.VDomArray()};`);
+      withSubContext(ctx, { currentParent: id }, () => {
+        generateCode(ast.children, ctx);
+      });
+      addLine(ctx, `ctx[this.zero] = ${id};`);
+    }
   }
   const vnode = `this.callTemplate("${ast.template}", ctx, metadata)`;
 
