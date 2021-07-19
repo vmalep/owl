@@ -122,7 +122,7 @@ export class OwlNode<T extends typeof Component = any> extends EventBus {
     switch (this.status) {
       case STATUS.MOUNTED:
         this.callWillUnmount();
-        this.patchDom(() => this.bdom!.remove());
+        this.bdom!.remove();
         break;
     }
 
@@ -130,7 +130,19 @@ export class OwlNode<T extends typeof Component = any> extends EventBus {
     this.status = STATUS.DESTROYED;
   }
 
-  patchDom(callback: Function) {
+  patchDom(callback: Function, root: RootFiber) {
+
+    for (let fiber of root.willPatch) {
+      // because of the asynchronous nature of the rendering, some parts of the
+      // UI may have been rendered, then deleted in a followup rendering, and we
+      // do not want to call onWillPatch in that case.
+      let node = fiber.node;
+      if (node.fiber === fiber) {
+        node.callWillPatch();
+      }
+    }
+
     callback();
+    this.fiber = null;
   }
 }

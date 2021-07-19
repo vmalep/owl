@@ -96,20 +96,19 @@ export class RootFiber extends Fiber {
 
   complete() {
     const node = this.node;
-    for (let fiber of this.willPatch) {
-      // because of the asynchronous nature of the rendering, some parts of the
-      // UI may have been rendered, then deleted in a followup rendering, and we
-      // do not want to call onWillPatch in that case.
-      let node = fiber.node;
-      if (node.fiber === fiber) {
-        node.callWillPatch();
-      }
-    }
+    // for (let fiber of this.willPatch) {
+    //   // because of the asynchronous nature of the rendering, some parts of the
+    //   // UI may have been rendered, then deleted in a followup rendering, and we
+    //   // do not want to call onWillPatch in that case.
+    //   let node = fiber.node;
+    //   if (node.fiber === fiber) {
+    //     node.callWillPatch();
+    //   }
+    // }
     const mountedNodes: any[] = [];
     const patchedNodes: any[] = [node];
-    node.patchDom(() => node.bdom!.patch(this.bdom!, mountedNodes, patchedNodes));
+    node.patchDom(() => node.bdom!.patch(this.bdom!, mountedNodes, patchedNodes), this);
     this.finalize(mountedNodes, patchedNodes);
-    node.fiber = null;
   }
 
   finalize(mounted: OwlNode[], patched: OwlNode[]) {
@@ -140,9 +139,8 @@ export class MountFiber extends RootFiber {
     node.bdom = this.bdom;
     const mountedNodes: any[] = [node];
     const patchedNodes: any[] = [];
-    node.patchDom(() => node.bdom!.mount(this.target, mountedNodes, patchedNodes));
+    node.patchDom(() => node.bdom!.mount(this.target, mountedNodes, patchedNodes), this);
     this.finalize(mountedNodes, patchedNodes);
     node.status = STATUS.MOUNTED;
-    node.fiber = null;
   }
 }
