@@ -29,12 +29,15 @@ export class BComponent extends Block {
       // delete parentNode.children[key];
       node = undefined;
     }
+    const parentFiber = parentNode.fiber!;
     if (node) {
       // update
-      const parentFiber = parentNode.fiber!;
       const fiber = makeChildFiber(node, parentFiber);
       if (node.willPatch.length) {
         parentFiber.root.willPatch.add(fiber);
+      }
+      if (node.patched.length) {
+        parentFiber.root.patched.add(fiber);
       }
       node.updateAndRender(props, fiber);
     } else {
@@ -44,6 +47,9 @@ export class BComponent extends Block {
       node = new OwlNode(parentNode.app, C, props);
       parentNode.children[key] = node;
       const fiber = makeChildFiber(node, parentNode.fiber!);
+      if (node.mounted.length) {
+        parentFiber.root.mounted.add(fiber);
+      }
       node.initiateRender(fiber);
     }
     this.node = node;

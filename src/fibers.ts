@@ -87,6 +87,9 @@ export class RootFiber extends Fiber {
     if (node.willPatch.length) {
       this.willPatch.add(this);
     }
+    if (node.patched.length) {
+      this.patched.add(this);
+    }
 
     this.promise = new Promise((resolve, reject) => {
       this.resolve = resolve;
@@ -108,22 +111,25 @@ export class RootFiber extends Fiber {
     const mountedNodes: any[] = [];
     const patchedNodes: any[] = [node];
     node.patchDom(() => node.bdom!.patch(this.bdom!, mountedNodes, patchedNodes), this);
-    this.finalize(mountedNodes, patchedNodes);
+    // this.finalize([...this.mounted], patchedNodes);
   }
 
-  finalize(mounted: OwlNode[], patched: OwlNode[]) {
-    let current;
-    while ((current = mounted.pop())) {
-      for (let cb of current.mounted) {
-        cb();
-      }
-    }
-    while ((current = patched.pop())) {
-      for (let cb of current.patched) {
-        cb();
-      }
-    }
-  }
+  // finalize(mounted: Fiber[], patched: OwlNode[]) {
+  //   let current;
+  //   // while ((current = mounted.pop())) {
+  //   //   if (current.node.fiber === current) {
+
+  //   //     for (let cb of current.node.mounted) {
+  //   //       cb();
+  //   //     }
+  //   //   }
+  //   // }
+  //   while ((current = patched.pop())) {
+  //     for (let cb of current.patched) {
+  //       cb();
+  //     }
+  //   }
+  // }
 }
 
 export class MountFiber extends RootFiber {
@@ -133,6 +139,10 @@ export class MountFiber extends RootFiber {
     super(node);
     this.target = target;
     this.willPatch.clear();
+    this.patched.clear();
+    if (node.mounted.length) {
+      this.mounted.add(this);
+    }
   }
   complete() {
     const node = this.node;
@@ -140,7 +150,7 @@ export class MountFiber extends RootFiber {
     const mountedNodes: any[] = [node];
     const patchedNodes: any[] = [];
     node.patchDom(() => node.bdom!.mount(this.target, mountedNodes, patchedNodes), this);
-    this.finalize(mountedNodes, patchedNodes);
+    // this.finalize([...this.mounted], patchedNodes);
     node.status = STATUS.MOUNTED;
   }
 }

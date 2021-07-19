@@ -143,6 +143,25 @@ export class OwlNode<T extends typeof Component = any> extends EventBus {
     }
 
     callback();
+    let current
+    let mountedFibers = [...root.mounted];
+    while ((current = mountedFibers.pop())) {
+      // if (current.node.fiber === current) {
+
+        for (let cb of current.node.mounted) {
+          cb();
+        }
+      // }
+    }
+
+    let patchedFibers = [...root.patched];
+    while ((current = patchedFibers.pop())) {
+      // if (current.node.fiber === current) {
+        for (let cb of current.node.patched) {
+          cb();
+        }
+      // }
+    }
     this.fiber = null;
   }
 }
