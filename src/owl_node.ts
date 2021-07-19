@@ -122,11 +122,15 @@ export class OwlNode<T extends typeof Component = any> extends EventBus {
     switch (this.status) {
       case STATUS.MOUNTED:
         this.callWillUnmount();
-        this.bdom!.remove();
+        this.patchDom(() => this.bdom!.remove());
         break;
     }
 
     this.callDestroyed();
     this.status = STATUS.DESTROYED;
+  }
+
+  patchDom(callback: Function) {
+    callback();
   }
 }

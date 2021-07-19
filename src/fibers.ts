@@ -107,7 +107,7 @@ export class RootFiber extends Fiber {
     }
     const mountedNodes: any[] = [];
     const patchedNodes: any[] = [node];
-    node.bdom!.patch(this.bdom!, mountedNodes, patchedNodes);
+    node.patchDom(() => node.bdom!.patch(this.bdom!, mountedNodes, patchedNodes));
     this.finalize(mountedNodes, patchedNodes);
     node.fiber = null;
   }
@@ -140,7 +140,7 @@ export class MountFiber extends RootFiber {
     node.bdom = this.bdom;
     const mountedNodes: any[] = [node];
     const patchedNodes: any[] = [];
-    node.bdom!.mount(this.target, mountedNodes, patchedNodes);
+    node.patchDom(() => node.bdom!.mount(this.target, mountedNodes, patchedNodes));
     this.finalize(mountedNodes, patchedNodes);
     node.status = STATUS.MOUNTED;
     node.fiber = null;
