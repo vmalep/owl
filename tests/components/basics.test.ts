@@ -1,5 +1,5 @@
-import { mount, render } from "../../src";
-import { xml, makeTestFixture, snapshotEverything } from "../helpers";
+import { mount } from "../../src";
+import { xml, makeTestFixture, snapshotEverything, nextTick } from "../helpers";
 
 let fixture: HTMLElement;
 
@@ -13,7 +13,7 @@ describe("basics", () => {
     const template = xml`<span>simple vnode</span>`;
 
     function Test() {
-      return () => render(template);
+      return () => template();
     }
 
     await mount(Test, fixture);
@@ -61,10 +61,10 @@ describe("basics", () => {
   // });
 
   test("can mount a component with just some text", async () => {
-    const template = xml`just text`;
+    const renderTest = xml`just text`;
 
     function Test() {
-      return () => render(template);
+      return () => renderTest();
     }
 
     await mount(Test, fixture);
@@ -75,7 +75,7 @@ describe("basics", () => {
   test("can mount a component with no text", async () => {
     const template = xml`<t></t>`;
     function Test() {
-      return () => render(template);
+      return () => template();
     }
 
     await mount(Test, fixture);
@@ -83,11 +83,22 @@ describe("basics", () => {
     expect(fixture.innerHTML).toBe("");
   });
 
+  test("can mount a component with dynamic text", async () => {
+    const template = xml`<t t-esc="value"/>`;
+    function Test() {
+      return () => template({ value: 3 });
+    }
+
+    await mount(Test, fixture);
+
+    expect(fixture.innerHTML).toBe("3");
+  });
+
   test("can mount a simple component with multiple roots", async () => {
     const template = xml`<span></span><div></div>`;
 
     function Test() {
-      return () => render(template);
+      return () => template();
     }
 
     await mount(Test, fixture);
@@ -95,20 +106,27 @@ describe("basics", () => {
     expect(fixture.innerHTML).toBe("<span></span><div></div>");
   });
 
-  // test("component with dynamic content can be updated", async () => {
-  //   class Test extends Component {
-  //     static template = xml`<span><t t-esc="value"/></span>`;
-  //     value = 1;
-  //   }
+  test("component with dynamic content can be updated", async () => {
+    const template = xml`<button t-on-click="inc"><t t-esc="value"/></button>`;
 
-  //   const component = await mount(Test, fixture);
+    function Test(node: any) {
+      let value = 1;
 
-  //   expect(fixture.innerHTML).toBe("<span>1</span>");
+      const inc = () => {
+        value++;
+        node.render();
+      };
+      return () => template({ value, inc });
+    }
 
-  //   component.value = 2;
-  //   await component.render();
-  //   expect(fixture.innerHTML).toBe("<span>2</span>");
-  // });
+    await mount(Test, fixture);
+
+    expect(fixture.innerHTML).toBe("<button>1</button>");
+
+    fixture.querySelector("button")!.click();
+    await nextTick();
+    expect(fixture.innerHTML).toBe("<button>2</button>");
+  });
 
   // test("updating a component with t-foreach as root", async () => {
   //   class Test extends Component {
@@ -221,19 +239,20 @@ describe("basics", () => {
   //   expect(fixture.innerHTML).toBe(`<span>1</span>text<span>2</span>`);
   // });
 
-  // test("a component inside a component", async () => {
-  //   class Child extends Component {
-  //     static template = xml`<div>simple vnode</div>`;
-  //   }
+  test("a component inside a component", async () => {
+    const child = xml`<div>simple vnode</div>`;
+    function Child() {
+      return () => child();
+    }
 
-  //   class Parent extends Component {
-  //     static template = xml`<span><Child/></span>`;
-  //     static components = { Child };
-  //   }
+    const parent = xml`<span><Child/></span>`;
+    function Parent() {
+      return () => parent({ Child });
+    }
 
-  //   await mount(Parent, fixture);
-  //   expect(fixture.innerHTML).toBe("<span><div>simple vnode</div></span>");
-  // });
+    await mount(Parent, fixture);
+    expect(fixture.innerHTML).toBe("<span><div>simple vnode</div></span>");
+  });
 
   // test("a class component inside a class component, no external dom", async () => {
   //   class Child extends Component {

@@ -22,8 +22,9 @@ export class BNode implements Block<BNode> {
   currentClass?: any = null;
   classTarget?: HTMLElement;
   handlers: any = null;
-  component: ComponentClosure;
+  renderComponent: ComponentClosure;
   bdom: Block | null = null;
+  dirty: boolean = false;
 
   children: { [key: string]: BNode } = Object.create(null);
   slots: any = {};
@@ -37,11 +38,11 @@ export class BNode implements Block<BNode> {
 
   constructor(C: Component, props: any) {
     currentNode = this;
-    this.component = C();
+    this.renderComponent = C(this);
   }
 
   mountComponent(target: any) {
-    this.bdom = this.component();
+    this.bdom = this.renderComponent();
     mountBlock(this.bdom, target);
   }
 
@@ -57,23 +58,30 @@ export class BNode implements Block<BNode> {
   //   }
   // }
 
-  // async render() {
-  //   if (this.fiber && !this.fiber.bdom) {
-  //     return this.fiber.root.promise;
-  //   }
-  //   if (!this.bdom && !this.fiber) {
-  //     // should find a way to return the future mounting promise
-  //     return;
-  //   }
+  async render() {
+    this.dirty = true;
+    await Promise.resolve();
+    if (this.dirty) {
+      this.dirty = false;
+      let newblock = this.renderComponent();
+      this.bdom!.patch(newblock);
+    }
+    //   if (this.fiber && !this.fiber.bdom) {
+    //     return this.fiber.root.promise;
+    //   }
+    //   if (!this.bdom && !this.fiber) {
+    //     // should find a way to return the future mounting promise
+    //     return;
+    //   }
 
-  //   const fiber = makeRootFiber(this);
-  //   this.app.scheduler.addFiber(fiber);
-  //   await Promise.resolve();
-  //   if (this.fiber === fiber) {
-  //     this._render(fiber);
-  //   }
-  //   return fiber.root.promise;
-  // }
+    //   const fiber = makeRootFiber(this);
+    //   this.app.scheduler.addFiber(fiber);
+    //   await Promise.resolve();
+    //   if (this.fiber === fiber) {
+    //     this._render(fiber);
+    //   }
+    //   return fiber.root.promise;
+  }
 
   // _render(fiber: Fiber | RootFiber) {
   //   try {

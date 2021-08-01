@@ -99,7 +99,7 @@ export class BElem implements Block<BElem> {
         const ctx = info[0];
         const method = info[1];
         const args = info[2] || [];
-        ctx.__owl__.component[method](...args, ev);
+        ctx[method](...args, ev);
       }
     });
   }

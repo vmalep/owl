@@ -23,7 +23,7 @@ import {
   parse,
 } from "./qweb_parser";
 
-export type Template = (context: any, node: any, key?: string) => Block;
+export type Template = (context?: any, node?: any, key?: string) => Block;
 export type TemplateFunction = (blocks: any, utils: any) => Template;
 
 // -----------------------------------------------------------------------------

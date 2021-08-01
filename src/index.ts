@@ -1,6 +1,6 @@
 import { Block, Blocks as BaseBlocks } from "./bdom";
 import { BNode } from "./b_node";
-import { compileTemplate, Template } from "./compiler";
+import { compileTemplate } from "./compiler";
 import { UTILS } from "./template_utils";
 
 // export { App, Component };
@@ -43,13 +43,9 @@ export function xml(strings: TemplateStringsArray, ...args: any[]) {
 // Render
 // -----------------------------------------------------------------------------
 
-export function render(template: Template, context: any = {}): Block {
-  return template(context, {});
-}
-
 export type ComponentClosure = () => Block;
 
-export type Component = () => ComponentClosure;
+export type Component = (node: BNode) => ComponentClosure;
 
 export async function mount(C: Component, target: HTMLElement): Promise<void> {
   if (!(target instanceof HTMLElement)) {
