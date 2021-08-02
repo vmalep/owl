@@ -10,7 +10,7 @@ import { UTILS } from "./template_utils";
 //   return current!.component;
 // }
 
-// export { EventBus } from "./event_bus";
+export { EventBus } from "./event_bus";
 // export {
 //   onDestroyed, onMounted, onPatched,
 //   onRender, onWillPatch, onWillStart, onWillUnmount,
@@ -18,7 +18,7 @@ import { UTILS } from "./template_utils";
 // } from "./lifecycle_hooks";
 // export { Memo } from "./misc/memo";
 // export { Portal } from "./misc/portal";
-// export { useState } from "./reactivity";
+export { useState } from "./reactivity";
 // export { useRef } from "./refs";
 // export { status } from "./status";
 // // export { xml } from "./tags";

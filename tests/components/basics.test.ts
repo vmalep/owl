@@ -1,4 +1,4 @@
-import { mount, render } from "../../src";
+import { mount, render, useState } from "../../src";
 import { xml, makeTestFixture, snapshotEverything, nextTick } from "../helpers";
 
 let fixture: HTMLElement;
@@ -254,19 +254,20 @@ describe("basics", () => {
     expect(fixture.innerHTML).toBe("<span><div>simple vnode</div></span>");
   });
 
-  // test("a class component inside a class component, no external dom", async () => {
-  //   class Child extends Component {
-  //     static template = xml`<div>simple vnode</div>`;
-  //   }
+  test("a class component inside a class component, no external dom", async () => {
+    function Child () {
+      const template = xml`<div>simple vnode</div>`;
+      return () => render(template);
+    }
 
-  //   class Parent extends Component {
-  //     static template = xml`<Child/>`;
-  //     static components = { Child };
-  //   }
+    function Parent () {
+      const template = xml`<Child/>`;
+      return () => render(template, { Child });
+    }
 
-  //   await mount(Parent, fixture);
-  //   expect(fixture.innerHTML).toBe("<div>simple vnode</div>");
-  // });
+    await mount(Parent, fixture);
+    expect(fixture.innerHTML).toBe("<div>simple vnode</div>");
+  });
 
   // test("simple component with a dynamic text", async () => {
   //   class Test extends Component {
@@ -281,18 +282,22 @@ describe("basics", () => {
   //   expect(fixture.innerHTML).toBe("<div>5</div>");
   // });
 
-  // test("simple component, useState", async () => {
-  //   class Test extends Component {
-  //     static template = xml`<div><t t-esc="state.value" /></div>`;
-  //     state = useState({ value: 3 });
-  //   }
+  test("simple component, useState", async () => {
+    let testState: any = null;
 
-  //   const test = await mount(Test, fixture);
-  //   expect(fixture.innerHTML).toBe("<div>3</div>");
-  //   test.state.value = 5;
-  //   await nextTick();
-  //   expect(fixture.innerHTML).toBe("<div>5</div>");
-  // });
+    function Test () {
+      const template = xml`<div><t t-esc="value" /></div>`;
+      const state = useState({ value: 3 });
+      testState = state;
+      return () => render(template, state);
+    }
+
+    await mount(Test, fixture);
+    expect(fixture.innerHTML).toBe("<div>3</div>");
+    testState.value = 5;
+    await nextTick();
+    expect(fixture.innerHTML).toBe("<div>5</div>");
+  });
 
   // test("two child components", async () => {
   //   class Child extends Component {
@@ -308,19 +313,20 @@ describe("basics", () => {
   //   expect(fixture.innerHTML).toBe("<div>simple vnode</div><div>simple vnode</div>");
   // });
 
-  // test("class parent, class child component with props", async () => {
-  //   class Child extends Component {
-  //     static template = xml`<div><t t-esc="props.value" /></div>`;
-  //   }
+  test("class parent, class child component with props", async () => {
+    function Child () {
+      const template = xml`<div><t t-esc="value" /></div>`;
+      return (props: any) => render(template, props)
+    }
 
-  //   class Parent extends Component {
-  //     static template = xml`<Child value="42" />`;
-  //     static components = { Child };
-  //   }
+    function Parent () {
+      const template = xml`<Child value="42" />`;
+      return () => render(template, { Child });
+    }
 
-  //   await mount(Parent, fixture);
-  //   expect(fixture.innerHTML).toBe("<div>42</div>");
-  // });
+    await mount(Parent, fixture);
+    expect(fixture.innerHTML).toBe("<div>42</div>");
+  });
 
   // test("parent, child and grandchild", async () => {
   //   class GrandChild extends Component {

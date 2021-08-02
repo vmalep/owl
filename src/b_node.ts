@@ -146,7 +146,7 @@ export class BNode implements Block<BNode> {
       const C = owner[name as any];
       node = new BNode(C, props);
       this.children[key] = node;
-      node.bdom = node.renderComponent();
+      node.bdom = node.renderComponent(props);
 
       //     const fiber = makeChildFiber(node, parentFiber);
       //     node.initiateRender(fiber);

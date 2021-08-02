@@ -1,5 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`basics a class component inside a class component, no external dom 1`] = `
+"function anonymous(Blocks, helpers
+) {
+  let {BElem, BText, BNode, BCollection, BHtml, BMulti, BStatic, BDispatch} = Blocks;
+  let {elem, setText, withDefault, call, getTemplate, zero, callSlot, capture, toClassObj} = helpers;
+  
+  return node => function template(ctx, key = \\"\\") {
+    const b1 = node.getChild(\`Child\`, {}, key + \`__1\`, ctx);
+    return b1;
+  }
+}"
+`;
+
+exports[`basics a class component inside a class component, no external dom 2`] = `
+"function anonymous(Blocks, helpers
+) {
+  let {BElem, BText, BNode, BCollection, BHtml, BMulti, BStatic, BDispatch} = Blocks;
+  let {elem, setText, withDefault, call, getTemplate, zero, callSlot, capture, toClassObj} = helpers;
+  
+  class Block1 extends BStatic {
+    static el = elem(\`<div>simple vnode</div>\`);
+  }
+  
+  return node => function template(ctx, key = \\"\\") {
+    const b1 = new Block1();
+    return b1;
+  }
+}"
+`;
+
 exports[`basics a component inside a component 1`] = `
 "function anonymous(Blocks, helpers
 ) {
@@ -119,6 +149,41 @@ exports[`basics can mount a simple component with multiple roots 1`] = `
 }"
 `;
 
+exports[`basics class parent, class child component with props 1`] = `
+"function anonymous(Blocks, helpers
+) {
+  let {BElem, BText, BNode, BCollection, BHtml, BMulti, BStatic, BDispatch} = Blocks;
+  let {elem, setText, withDefault, call, getTemplate, zero, callSlot, capture, toClassObj} = helpers;
+  
+  return node => function template(ctx, key = \\"\\") {
+    const b1 = node.getChild(\`Child\`, {value: 42}, key + \`__1\`, ctx);
+    return b1;
+  }
+}"
+`;
+
+exports[`basics class parent, class child component with props 2`] = `
+"function anonymous(Blocks, helpers
+) {
+  let {BElem, BText, BNode, BCollection, BHtml, BMulti, BStatic, BDispatch} = Blocks;
+  let {elem, setText, withDefault, call, getTemplate, zero, callSlot, capture, toClassObj} = helpers;
+  
+  class Block1 extends BElem {
+    static el = elem(\`<div><owl-text/></div>\`);
+    data = new Array(1);
+    update(prevData, data) {
+      setText(this.el.firstChild, prevData[0], data[0]);
+    }
+  }
+  
+  return node => function template(ctx, key = \\"\\") {
+    const b1 = new Block1();
+    b1.data[0] = ctx['value'];
+    return b1;
+  }
+}"
+`;
+
 exports[`basics component with dynamic content can be updated 1`] = `
 "function anonymous(Blocks, helpers
 ) {
@@ -141,6 +206,28 @@ exports[`basics component with dynamic content can be updated 1`] = `
     ctx = Object.create(ctx);
     const b1 = new Block1();
     b1.handlers[0] = [ctx, 'inc'];
+    b1.data[0] = ctx['value'];
+    return b1;
+  }
+}"
+`;
+
+exports[`basics simple component, useState 1`] = `
+"function anonymous(Blocks, helpers
+) {
+  let {BElem, BText, BNode, BCollection, BHtml, BMulti, BStatic, BDispatch} = Blocks;
+  let {elem, setText, withDefault, call, getTemplate, zero, callSlot, capture, toClassObj} = helpers;
+  
+  class Block1 extends BElem {
+    static el = elem(\`<div><owl-text/></div>\`);
+    data = new Array(1);
+    update(prevData, data) {
+      setText(this.el.firstChild, prevData[0], data[0]);
+    }
+  }
+  
+  return node => function template(ctx, key = \\"\\") {
+    const b1 = new Block1();
     b1.data[0] = ctx['value'];
     return b1;
   }
