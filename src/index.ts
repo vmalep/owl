@@ -1,6 +1,6 @@
 import { Block, Blocks as BaseBlocks } from "./bdom";
-import { BNode } from "./b_node";
-import { compileTemplate } from "./compiler";
+import { BNode, getCurrent } from "./b_node";
+import { compileTemplate, Template } from "./compiler";
 import { UTILS } from "./template_utils";
 
 // export { App, Component };
@@ -34,14 +34,24 @@ const Blocks = {
   BNode,
 };
 
+const cache: any = {};
+
 export function xml(strings: TemplateStringsArray, ...args: any[]) {
   const value = String.raw(strings, ...args);
-  return compileTemplate(value)(Blocks, UTILS);
+  if (!cache[value]) {
+    cache[value] = compileTemplate(value)(Blocks, UTILS);
+  }
+  let node = getCurrent();
+  return cache[value](node);
 }
 
 // -----------------------------------------------------------------------------
 // Render
 // -----------------------------------------------------------------------------
+
+export function render(C: Template, context: any = {}): Block {
+  return C(context, {});
+}
 
 export type ComponentClosure = () => Block;
 

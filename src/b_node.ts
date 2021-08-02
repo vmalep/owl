@@ -136,32 +136,23 @@ export class BNode implements Block<BNode> {
    * @param owner the component in which the component was defined
    * @param parent the actual parent (may be different in case of slots)
    */
-  // getChild(name: string | typeof Component, props: any, key: string, owner: any) {
-  //   let node: any = this.children[key];
-  //   let isDynamic = typeof name !== "string";
+  getChild(name: string, props: any, key: string, owner: any) {
+    let node: any = this.children[key];
 
-  //   if (node && node.status < STATUS.MOUNTED) {
-  //     node.destroy();
-  //     node = undefined;
-  //   }
-  //   if (isDynamic && node && node.component.constructor !== name) {
-  //     node = undefined;
-  //   }
-
-  //   const parentFiber = this.fiber!;
-  //   if (node) {
+    if (node) {
   //     node.updateAndRender(props, parentFiber);
-  //   } else {
+    } else {
   //     // new component
-  //     const C = isDynamic ? name : owner.constructor.components[name as any];
-  //     node = new BNode(C, props, this.app);
-  //     this.children[key] = node;
+      const C = owner[name as any];
+      node = new BNode(C, props);
+      this.children[key] = node;
+      node.bdom = node.renderComponent();
 
   //     const fiber = makeChildFiber(node, parentFiber);
   //     node.initiateRender(fiber);
-  //   }
-  //   return node;
-  // }
+    }
+    return node;
+  }
 
   // async updateAndRender(props: any, parentFiber: Fiber) {
   //   // update

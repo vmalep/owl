@@ -1,4 +1,4 @@
-import { mount } from "../../src";
+import { mount, render } from "../../src";
 import { xml, makeTestFixture, snapshotEverything, nextTick } from "../helpers";
 
 let fixture: HTMLElement;
@@ -10,10 +10,10 @@ beforeEach(() => {
 
 describe("basics", () => {
   test("can mount a simple component", async () => {
-    const template = xml`<span>simple vnode</span>`;
-
+    
     function Test() {
-      return () => template();
+      const template = xml`<span>simple vnode</span>`;
+      return () => render(template);
     }
 
     await mount(Test, fixture);
@@ -61,10 +61,10 @@ describe("basics", () => {
   // });
 
   test("can mount a component with just some text", async () => {
-    const renderTest = xml`just text`;
-
+    
     function Test() {
-      return () => renderTest();
+      const template = xml`just text`;
+      return () => render(template);
     }
 
     await mount(Test, fixture);
@@ -73,9 +73,9 @@ describe("basics", () => {
   });
 
   test("can mount a component with no text", async () => {
-    const template = xml`<t></t>`;
     function Test() {
-      return () => template();
+      const template = xml`<t></t>`;
+      return () => render(template);
     }
 
     await mount(Test, fixture);
@@ -84,9 +84,9 @@ describe("basics", () => {
   });
 
   test("can mount a component with dynamic text", async () => {
-    const template = xml`<t t-esc="value"/>`;
     function Test() {
-      return () => template({ value: 3 });
+      const template = xml`<t t-esc="value"/>`;
+      return () => render(template, { value: 3 });
     }
 
     await mount(Test, fixture);
@@ -95,10 +95,10 @@ describe("basics", () => {
   });
 
   test("can mount a simple component with multiple roots", async () => {
-    const template = xml`<span></span><div></div>`;
-
+    
     function Test() {
-      return () => template();
+      const template = xml`<span></span><div></div>`;
+      return () => render(template);
     }
 
     await mount(Test, fixture);
@@ -107,16 +107,19 @@ describe("basics", () => {
   });
 
   test("component with dynamic content can be updated", async () => {
-    const template = xml`<button t-on-click="inc"><t t-esc="value"/></button>`;
-
+    
     function Test(node: any) {
+      const template = xml`
+        <button t-on-click="inc">
+          <t t-esc="value"/>
+        </button>`;
       let value = 1;
 
       const inc = () => {
         value++;
         node.render();
       };
-      return () => template({ value, inc });
+      return () => render(template, { value, inc });
     }
 
     await mount(Test, fixture);
@@ -240,14 +243,15 @@ describe("basics", () => {
   // });
 
   test("a component inside a component", async () => {
-    const child = xml`<div>simple vnode</div>`;
     function Child() {
-      return () => child();
+      const template = xml`<div>simple vnode</div>`;
+      return () => render(template);
     }
 
-    const parent = xml`<span><Child/></span>`;
     function Parent() {
-      return () => parent({ Child });
+      const template = xml`<span><Child/></span>`;
+
+      return () => render(template, { Child });
     }
 
     await mount(Parent, fixture);
