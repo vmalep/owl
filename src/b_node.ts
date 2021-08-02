@@ -147,6 +147,7 @@ export class BNode implements Block<BNode> {
       node = new BNode(C, props);
       this.children[key] = node;
       node.bdom = node.renderComponent();
+      console.warn(node)
 
   //     const fiber = makeChildFiber(node, parentFiber);
   //     node.initiateRender(fiber);
@@ -228,6 +229,7 @@ export class BNode implements Block<BNode> {
   }
 
   patch() {
+    console.warn(this)
     //   this.bdom!.patch(this!.fiber!.bdom!);
     //   if (this.parentClass) {
     //     const el = this.firstChildNode() as HTMLElement;
