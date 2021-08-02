@@ -219,7 +219,7 @@ export class QWebCompiler {
     // generate main code
     this.target.indentLevel = 0;
     this.addLine(``);
-    this.addLine(`return node => function template(ctx, key = "") {`);
+    this.addLine(`return node => function template(ctx) {`);
     if (this.hasRef) {
       this.addLine(`  const refs = ctx.__owl__.refs;`);
     }
@@ -846,7 +846,7 @@ export class QWebCompiler {
         this.insertAnchor(block);
       }
     }
-    const key = `key + \`${this.generateComponentKey()}\``;
+    const key = this.generateComponentKey();
     if (isDynamic) {
       const templateVar = this.generateId("template");
       this.addLine(`const ${templateVar} = ${subTemplate};`);
@@ -946,7 +946,7 @@ export class QWebCompiler {
     } else {
       expr = `\`${ast.name}\``;
     }
-    const blockArgs = `${expr}, ${propString}, key + \`${key}\`, ctx`;
+    const blockArgs = `${expr}, ${propString}, \`${key}\`, ctx`;
 
     // slots
     const hasSlot = !!Object.keys(ast.slots).length;

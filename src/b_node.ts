@@ -24,7 +24,6 @@ export class BNode implements Block<BNode> {
   handlers: any = null;
   renderComponent: ComponentClosure;
   bdom: Block | null = null;
-  nextBdom: Block | null = null;
   dirty: boolean = false;
 
   children: { [key: string]: BNode } = Object.create(null);
@@ -144,11 +143,11 @@ export class BNode implements Block<BNode> {
     if (node) {
       if (node.shouldUpdate) {
         if (node.shouldUpdate(node.props, props)) {
+          node.bdom!.patch(node.renderComponent(props));
           node.props = props;
-          node.nextBdom = node.renderComponent(props);
         }
       } else {
-        node.nextBdom = node.renderComponent(props);
+        node.bdom!.patch(node.renderComponent(props));
         node.props = props;
       }
       //     node.updateAndRender(props, parentFiber);
@@ -237,9 +236,7 @@ export class BNode implements Block<BNode> {
   }
 
   patch() {
-    if (this.nextBdom) {
-      this.bdom!.patch(this.nextBdom);
-    }
+      // this.bdom!.patch(this.nextBdom);
     //   this.bdom!.patch(this!.fiber!.bdom!);
     //   if (this.parentClass) {
     //     const el = this.firstChildNode() as HTMLElement;
