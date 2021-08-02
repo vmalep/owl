@@ -10,7 +10,6 @@ beforeEach(() => {
 
 describe("basics", () => {
   test("can mount a simple component", async () => {
-    
     function Test() {
       const template = xml`<span>simple vnode</span>`;
       return () => render(template);
@@ -61,7 +60,6 @@ describe("basics", () => {
   // });
 
   test("can mount a component with just some text", async () => {
-    
     function Test() {
       const template = xml`just text`;
       return () => render(template);
@@ -95,7 +93,6 @@ describe("basics", () => {
   });
 
   test("can mount a simple component with multiple roots", async () => {
-    
     function Test() {
       const template = xml`<span></span><div></div>`;
       return () => render(template);
@@ -107,7 +104,6 @@ describe("basics", () => {
   });
 
   test("component with dynamic content can be updated", async () => {
-    
     function Test(node: any) {
       const template = xml`
         <button t-on-click="inc">

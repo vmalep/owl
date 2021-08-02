@@ -140,17 +140,16 @@ export class BNode implements Block<BNode> {
     let node: any = this.children[key];
 
     if (node) {
-  //     node.updateAndRender(props, parentFiber);
+      //     node.updateAndRender(props, parentFiber);
     } else {
-  //     // new component
+      //     // new component
       const C = owner[name as any];
       node = new BNode(C, props);
       this.children[key] = node;
       node.bdom = node.renderComponent();
-      console.warn(node)
 
-  //     const fiber = makeChildFiber(node, parentFiber);
-  //     node.initiateRender(fiber);
+      //     const fiber = makeChildFiber(node, parentFiber);
+      //     node.initiateRender(fiber);
     }
     return node;
   }
@@ -184,31 +183,28 @@ export class BNode implements Block<BNode> {
   }
 
   mountBefore(anchor: ChildNode) {
-    //   const bdom = this.fiber!.bdom!;
+    const bdom = this.bdom!;
     //   this.bdom = bdom;
-    //   bdom.mountBefore(anchor);
-    //   if (this.parentClass) {
-    //     const el = this.firstChildNode();
-    //     if (el instanceof HTMLElement) {
-    //       this.addClass(el);
-    //     }
-    //     this.currentClass = this.parentClass;
-    //   }
-    //   this.status = STATUS.MOUNTED;
-    //   this.fiber!.appliedToDom = true;
-    //   this.fiber = null;
-    //   if (this.handlers) {
-    //     for (let i = 0; i < this.handlers.length; i++) {
-    //       const handler = this.handlers[i];
-    //       const eventType = handler[0];
-    //       const el = bdom.el!;
-    //       el.addEventListener(eventType, (ev: Event) => {
-    //         const info = this.handlers![i];
-    //         const [, ctx, method] = info;
-    //         (ctx.__owl__.component as any)[method](ev);
-    //       });
-    //     }
-    //   }
+    bdom.mountBefore(anchor);
+    if (this.parentClass) {
+      const el = this.firstChildNode();
+      if (el instanceof HTMLElement) {
+        this.addClass(el);
+      }
+      this.currentClass = this.parentClass;
+    }
+    if (this.handlers) {
+      for (let i = 0; i < this.handlers.length; i++) {
+        const handler = this.handlers[i];
+        const eventType = handler[0];
+        const el = bdom.el!;
+        el.addEventListener(eventType, (ev: Event) => {
+          const info = this.handlers![i];
+          const [, ctx, method] = info;
+          (ctx.__owl__.component as any)[method](ev);
+        });
+      }
+    }
   }
 
   moveBefore(anchor: ChildNode) {
@@ -229,7 +225,6 @@ export class BNode implements Block<BNode> {
   }
 
   patch() {
-    console.warn(this)
     //   this.bdom!.patch(this!.fiber!.bdom!);
     //   if (this.parentClass) {
     //     const el = this.firstChildNode() as HTMLElement;
