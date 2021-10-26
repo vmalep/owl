@@ -1,4 +1,5 @@
 import { observe, unobserve } from "../src/reactivity";
+import { nextTick } from "./helpers";
 
 describe("observe", () => {
   test("basic properties", () => {
@@ -448,38 +449,37 @@ describe("observe", () => {
     expect(n).toBe(1);
   });
 
-  test.skip("call callback when state is changed", async () => {
-    /*    const observer = new Observer();
-    observer.notifyCB = jest.fn();
-    const obj: any = observer.observe({ a: 1, b: { c: 2 }, d: [{ e: 3 }], f: 4 });
+  test.only("call callback when state is changed", async () => {
+    const callback = jest.fn();
+    const obj: any = observe({ a: 1, b: { c: 2 }, d: [{ e: 3 }], f: 4 }, callback);
 
-    expect(observer.notifyCB).toBeCalledTimes(0);
+    expect(callback).toBeCalledTimes(0);
 
     obj.a = 2;
-    await nextMicroTick();
-    expect(observer.notifyCB).toBeCalledTimes(1);
+    await nextTick();
+    expect(callback).toBeCalledTimes(1);
 
     obj.b.c = 3;
-    await nextMicroTick();
-    expect(observer.notifyCB).toBeCalledTimes(2);
+    await nextTick();
+    expect(callback).toBeCalledTimes(2);
 
     obj.d[0].e = 5;
-    await nextMicroTick();
-    expect(observer.notifyCB).toBeCalledTimes(3);
+    await nextTick();
+    expect(callback).toBeCalledTimes(3);
 
     obj.a = 111;
     obj.f = 222;
-    await nextMicroTick();
-    expect(observer.notifyCB).toBeCalledTimes(5);*/
+    await nextTick();
+    expect(callback).toBeCalledTimes(5);
   });
 
   test.skip("throw error when state is mutated in object if allowMutation=false", async () => {
-    /*const observer = new Observer();
-    observer.allowMutations = false;
-    const obj: any = observer.observe({ a: 1 });
-    expect(() => {
-      obj.a = 2;
-    }).toThrow('Observed state cannot be changed here! (key: "a", val: "2")');*/
+    // /*const observer = new Observer();
+    // observer.allowMutations = false;
+    // const obj: any = observer.observe({ a: 1 });
+    // expect(() => {
+    //   obj.a = 2;
+    // }).toThrow('Observed state cannot be changed here! (key: "a", val: "2")');*/
   });
 
   test.skip("throw error when state is mutated in array if allowMutation=false", async () => {
@@ -534,7 +534,7 @@ describe("unobserve", () => {
     expect(n2).toBe(1);
   });
 
-  test.skip("observing some observed state, variant", () => {
+  test("observing some observed state, variant", () => {
     let n1 = 0;
     let n2 = 0;
     const inner = observe({ a: 1 }, () => n1++);
