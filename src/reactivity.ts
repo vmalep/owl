@@ -12,18 +12,27 @@ const SOURCE = Symbol("source");
 const OBSERVER = Symbol("observer");
 const KEYS = Symbol("keys");
 const ROOT = Symbol("root");
+const SEED = Symbol("Seed");
+const MAYBE_NOT_A_SEED = Symbol("maybeNotASeed");
 
-export function atom(source: any, observer: Observer) {
+export function atom(source: any, observer: Observer, maybeNotASeed?: any) {
   if (isTrackable(source) && observerSourceAtom.has(observer)) {
+    
     source = source[SOURCE] || source;
     const oldAtom = observerSourceAtom.get(observer)!.get(source);
     if (oldAtom) {
+      if (maybeNotASeed !== MAYBE_NOT_A_SEED) {
+        oldAtom[SEED] = true;
+      }
       return oldAtom;
     }
     if (!sourceAtoms.get(source)) {
       sourceAtoms.set(source, new Map([[ROOT, new ObserverSet()]]));
     }
     const newAtom = createAtom(source, observer);
+    if (maybeNotASeed !== MAYBE_NOT_A_SEED) {
+      newAtom[SEED] = true;
+    }
     observerSourceAtom.get(observer)!.set(source, newAtom);
     sourceAtoms.get(source)!.get(ROOT)!.add(newAtom);
     return newAtom;
@@ -31,11 +40,15 @@ export function atom(source: any, observer: Observer) {
   return source;
 }
 
-function createAtom(source: Source, observer: Observer): Atom {
+function createAtom(source: Source, observer: Observer, ): Atom {
   const keys: Set<any> = new Set();
-  let self: Atom;
+  let seed: boolean = false;
   const newAtom: Atom = new Proxy(source as any, {
-    set(target: any, key: string, value: any): boolean {
+    set(target: any, key: any, value: any): boolean {
+      if (key === SEED) {
+        seed = value;
+        return true;
+      }
       if (!(key in target)) {
         target[key] = value;
         notify(sourceAtoms.get(source)!.get(ROOT)!);
@@ -55,11 +68,13 @@ function createAtom(source: Source, observer: Observer): Atom {
       if (key in target) {
         delete target[key];
         // notify source observers
-        notify(sourceAtoms.get(source)!.get(ROOT)!);
+        notify(sourceAtoms.get(source)!.get(ROOT)!, true);
         const atoms = sourceAtoms.get(source)!;
         if (atoms.has(key)) {
           // clear source-key observers
-          atoms.get(key)!.deleteKey(key);
+          for (const atom of atoms.get(key)!) {
+            atom[KEYS].delete(key);
+          }
           atoms.delete(key);
         }
       }
@@ -73,6 +88,8 @@ function createAtom(source: Source, observer: Observer): Atom {
           return source;
         case KEYS:
           return keys;
+        case SEED:
+          return seed;
         default:
           const value = target[key];
           // register observer to source-key
@@ -81,15 +98,14 @@ function createAtom(source: Source, observer: Observer): Atom {
             if (!atoms.has(key)) {
               atoms.set(key, new ObserverSet());
             }
-            atoms.get(key)!.add(self);
+            atoms.get(key)!.add(newAtom);
             keys.add(key);
           }
           //
-          return atom(value, observer);
+          return atom(value, observer, MAYBE_NOT_A_SEED);
       }
     },
   });
-  self = newAtom;
   return newAtom;
 }
 
@@ -106,18 +122,23 @@ export function registerObserver(observer: Observer) {
   if (!observerSourceAtom.get(observer)) {
     observerSourceAtom.set(observer, new Map());
   }
-  return unregisterObserver.bind(null, observer);
+  return unregisterObserverAtoms.bind(null, observer);
 }
 
-function unregisterObserver(observer: Observer) {
+function unregisterObserverAtoms(observer: Observer, keepSeeds: boolean = false) {
   for (const [source, atom] of observerSourceAtom.get(observer)!) {
+    if (keepSeeds && atom[SEED]) {
+      continue;
+    }
     const atoms = sourceAtoms.get(source)!;
     atoms.get(ROOT)!.delete(atom);
     for (const key of atom[KEYS]) {
       atoms.get(key)!.delete(atom);
     }
   }
-  observerSourceAtom.delete(observer);
+  if (!keepSeeds) {
+    observerSourceAtom.delete(observer);
+  }
 }
 
 export function useState(state: any): Atom {
@@ -148,14 +169,6 @@ class ObserverSet {
       return this.callbackSet.delete(atom);
     }
   }
-  deleteKey(key: any) {
-    for (const atom of this.nodeAntichain) {
-      atom[KEYS].delete(key);
-    }
-    for (const atom of this.callbackSet) {
-      atom[KEYS].delete(key);
-    }
-  }
   union(other: ObserverSet) {
     for (const atom of other.nodeAntichain) {
       this.nodeAntichain.add(atom);
@@ -170,6 +183,14 @@ class ObserverSet {
     }
     for (const atom of this.callbackSet) {
       atom[OBSERVER]();
+    }
+  }
+  *[Symbol.iterator]() {
+    for (let elem of this.nodeAntichain) {
+      yield elem;
+    }
+    for (let elem of this.callbackSet) {
+      yield elem;
     }
   }
 }
@@ -216,7 +237,13 @@ class Antichain extends Set<Atom> {
 }
 
 let toNotify: ObserverSet | null = null;
-async function notify(observers: ObserverSet) {
+let toClean: Set<Observer> = new Set();
+async function notify(observers: ObserverSet, deletion = false) {
+  if (deletion) {
+    for (const atom of observers) {
+      toClean.add(atom[OBSERVER]);
+    }
+  }
   if (toNotify) {
     toNotify.union(observers);
     return;
@@ -224,6 +251,10 @@ async function notify(observers: ObserverSet) {
   toNotify = new ObserverSet();
   toNotify.union(observers);
   await Promise.resolve();
+  for (const observer of toClean) {
+    unregisterObserverAtoms(observer, true);
+  }
+  toClean.clear();
   toNotify.notify();
   toNotify = null;
 }

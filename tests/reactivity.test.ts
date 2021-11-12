@@ -76,6 +76,67 @@ describe("Reactivity: atom", () => {
     expect(n).toBe(1);
   });
 
+  test("atom on an object with a getter 1", async () => {
+    let n = 0;
+    let value = 1;
+    const atom = createAtom(
+      {
+        get a() {
+          return value;
+        },
+        set a(val) {
+          value = val;
+        },
+      },
+      () => n++
+    );
+    atom.a = atom.a + 4;
+    await nextMicroTick();
+    expect(n).toBe(1);
+  });
+
+  test("atom on an object with a getter 2", async () => {
+    let n = 0;
+    let value = { b: 1 };
+    const atom = createAtom(
+      {
+        get a() {
+          return value;
+        },
+      },
+      () => n++
+    );
+    expect(atom.a.b).toBe(1);
+    atom.a.b = 2;
+    await nextMicroTick();
+    expect(n).toBe(1);
+  });
+
+  test("atom on an object with a getter 3", async () => {
+    let n = 0;
+    const values: { b: number }[] = createAtom([]);
+    function createValue() {
+      const o = { b: values.length };
+      values.push(o);
+      return o;
+    }
+    const atom = createAtom(
+      {
+        get a() {
+          return createValue();
+        },
+      },
+      () => n++
+    );
+    for (let i = 0; i < 10; i++) {
+      expect(atom.a.b).toEqual(i);
+    }
+    expect(n).toBe(0);
+    values[0].b = 3;
+    await nextMicroTick();
+    expect(n).toBe(1); // !!! atoms for each object in values are still there !!! 
+  });
+
   test("atom observer is called after batch of operation", async () => {
     let n = 0;
     const atom1 = createAtom({ a: 1, b: 2 }, () => n++);
@@ -553,6 +614,7 @@ describe("Reactivity: atom", () => {
   test("properly handle already observed atom", async () => {
     let n1 = 0;
     let n2 = 0;
+
     const obj1 = createAtom({ a: 1 }, () => n1++) as any;
     const obj2 = createAtom({ b: 1 }, () => n2++) as any;
 
@@ -1324,14 +1386,11 @@ describe("Reactivity: useState", () => {
     expect([...steps]).toEqual(["list", "quantity1"]);
     steps.clear();
 
-    // secondQuantity is no longer accessible by List! But list react to changes
-    // --> this prooff that a useless atom continues to exist
     secondQuantity.quantity = 2;
     await nextMicroTick();
     await nextMicroTick();
-
     expect(fixture.innerHTML).toBe("<div><div>3</div> Total: 3 Count: 1</div>");
-    expect([...steps]).toEqual(["list"]); // should be avoided!!!
+    expect([...steps]).toEqual([]);
     steps.clear();
   });
 
