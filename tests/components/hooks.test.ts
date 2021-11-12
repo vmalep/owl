@@ -5,6 +5,8 @@ import {
   useRef,
   useState,
   useComponent,
+  useEnv,
+  useSubEnv,
   onMounted,
   onPatched,
   onWillStart,
@@ -12,7 +14,7 @@ import {
   onWillPatch,
   xml,
   onWillUnmount,
-} from "../../src";
+} from "../../src/index";
 import { makeTestFixture, nextTick, snapshotEverything } from "../helpers";
 
 let fixture: HTMLElement;
@@ -163,27 +165,30 @@ describe("hooks", () => {
     });
   });
 
-  test.skip("can use useEnv", async () => {
-    expect.assertions(2);
+  test.only("can use useEnv", async () => {
+    expect.assertions(3);
     class Test extends Component {
       static template = xml`<div><t t-esc="env.val"/></div>`;
       setup() {
-        //expect(useEnv()).toBe(this.env);
+        expect(useEnv()).toBe(this.env);
       }
     }
-    await mount(Test, fixture);
+    const env = { val: 1 };
+    await mount(Test, fixture, { env });
+    expect(fixture.innerHTML).toBe("<div>1</div>");
   });
 
-  test.skip("can use sub env", async () => {
+  test.only("can use sub env", async () => {
     class Test extends Component {
       static template = xml`<div><t t-esc="env.val"/></div>`;
       setup() {
-        //useSubEnv({ val: 3 });
+        useSubEnv({ val2: 1 });
       }
     }
-    const component = await mount(Test, fixture);
+    const env = { val: 3 };
+    const component = await mount(Test, fixture, { env });
     expect(fixture.innerHTML).toBe("<div>3</div>");
-    expect(component.env).not.toHaveProperty("val");
+    expect(component.env).not.toHaveProperty("val2");
     expect(component.env).toHaveProperty("val");
   });
 
@@ -198,22 +203,20 @@ describe("hooks", () => {
     await mount(Test, fixture);
   });
 
-  test.skip("parent and child env", async () => {
+  test.only("parent and child env", async () => {
     class Child extends Component {
       static template = xml`<div><t t-esc="env.val"/></div>`;
-      super() {
-        //useSubEnv({ val: 5 });
-      }
     }
 
     class Parent extends Component {
       static template = xml`<t t-esc="env.val"/><Child/>`;
       static components = { Child };
       setup() {
-        //useSubEnv({ val: 3 });
+        useSubEnv({ val: 5 });
       }
     }
-    mount(Parent, fixture);
+    const env = { val: 3 };
+    mount(Parent, fixture, { env });
     expect(fixture.innerHTML).toBe("3<div>5</div>");
   });
 

@@ -30,19 +30,19 @@ export const blockDom = {
   html,
 };
 
-// import { makeBlockClass } from "./_old_bdom/element";
-import { App } from "./app";
+import { App, AppConfig } from "./app";
 import { Component } from "./component/component";
 import { getCurrent } from "./component/component_node";
-// import { getCurrent } from "./b_node";
 
 export { App, Component };
 
 export async function mount<T extends typeof Component>(
   C: T,
-  target: HTMLElement
+  target: HTMLElement,
+  options: AppConfig = {}
 ): Promise<InstanceType<T>> {
   const app = new App(C);
+  app.configure(options);
   return app.mount(target);
 }
 
@@ -55,6 +55,7 @@ export { status } from "./component/status";
 export { Portal } from "./misc/portal";
 export { Memo } from "./misc/memo";
 export { css, xml } from "./tags";
+export { useEnv, useSubEnv } from "./env";
 export { useState } from "./reactivity";
 export { useRef } from "./refs";
 export { EventBus } from "./event_bus";

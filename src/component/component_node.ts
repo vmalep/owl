@@ -1,5 +1,6 @@
 import type { App } from "../app";
 import { BDom, VNode } from "../blockdom";
+import { Env } from "../env";
 import { Component } from "./component";
 import {
   Fiber,
@@ -74,6 +75,7 @@ export class ComponentNode<T extends typeof Component = any> implements VNode<Co
   renderFn: Function;
   parent: ComponentNode | null;
   level: number;
+  nextEnv: Env;
   children: { [key: string]: ComponentNode } = Object.create(null);
   slots: any = {};
   refs: any = {};
@@ -92,7 +94,9 @@ export class ComponentNode<T extends typeof Component = any> implements VNode<Co
     this.parent = parent || null;
     this.level = parent ? parent.level + 1 : 0;
     applyDefaultProps(props, C);
-    this.component = new C(props, app.env, this) as any;
+    const env = (parent && parent.nextEnv) || app.env;
+    this.nextEnv = env;
+    this.component = new C(props, this.nextEnv, this) as any;
     this.renderFn = app.getTemplate(C.template).bind(this.component, this.component, this);
     if (C.style) {
       applyStyles(C);
